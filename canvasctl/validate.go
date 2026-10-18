@@ -20,6 +20,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -178,7 +179,7 @@ type corpusMeta struct {
 }
 
 // contractSchema 契约级语料形状：用例顶层键集与用例校验器按契约分派
-// （模块注册表现有五契约、两种用例形状；SUPPORT-SURFACE.md §2）。
+// （模块注册表五契约；SUPPORT-SURFACE.md §2）。
 type contractSchema struct {
 	caseKeys     []string
 	validateCase func(relPath string, idx int, raw json.RawMessage, reg *codeRegistry, seenCaseNames map[string]string, res *Result)
@@ -186,10 +187,15 @@ type contractSchema struct {
 	moduleExtraKeys map[string][]string
 }
 
-// 两契约的用例顶层键集（严格解码，未知字段即红）。
+// 五契约的用例顶层键集（严格解码，未知字段即红）。
 var (
 	scanCaseKeys = []string{"name", "description", "template", "expect"}
 	evalCaseKeys = []string{"name", "description", "template", "context", "expect"}
+	// 管线三契约（工票 04）：图 payload（graph/frames/dataset）为不透明 wire 数据，
+	// validate 只钉信封键集与 expect 形状——语料故意携带「实现必须拒绝/透传」的负形态。
+	expandCaseKeys   = []string{"name", "description", "graph", "dataset", "expect"}
+	paginateCaseKeys = []string{"name", "description", "graph", "options", "expect"}
+	flowCaseKeys     = []string{"name", "description", "frames", "dataset", "flowChain", "expect"}
 )
 
 var contractSchemas = map[string]*contractSchema{
@@ -202,6 +208,18 @@ var contractSchemas = map[string]*contractSchema{
 		validateCase: validateEvalCase,
 		// dateTokens 转译表随语料发布（GOVERNANCE §3.3），钉在日期模块文件一处。
 		moduleExtraKeys: map[string][]string{"fn-date.json": {"dateTokens"}},
+	},
+	"expand-semantics": {
+		caseKeys:     expandCaseKeys,
+		validateCase: validateExpandCase,
+	},
+	"paginate-semantics": {
+		caseKeys:     paginateCaseKeys,
+		validateCase: validatePaginateCase,
+	},
+	"flow-semantics": {
+		caseKeys:     flowCaseKeys,
+		validateCase: validateFlowCase,
 	},
 }
 
@@ -418,6 +436,226 @@ func validateEvalCase(relPath string, idx int, raw json.RawMessage, reg *codeReg
 	res.Cases++
 }
 
+// validateExpandCase expand-semantics 用例形状：graph + dataset（任意 JSON，含 null）
+// + expect = {graph: 对象} | {errorCode}。
+func validateExpandCase(relPath string, idx int, raw json.RawMessage, reg *codeRegistry, seenCaseNames map[string]string, res *Result) {
+	m, ctx := caseIdentity(relPath, idx, raw, seenCaseNames, res)
+	if m == nil {
+		return
+	}
+
+	if err := checkKeys(m, expandCaseKeys, nil, ctx); err != nil {
+		res.err(err)
+		return
+	}
+	if _, err := decodeStringField(m, "description", ctx); err != nil {
+		res.err(err)
+		return
+	}
+	if err := requireObjectField(m, "graph", ctx); err != nil {
+		res.err(err)
+		return
+	}
+	// dataset 形状 = 任意 JSON（对象/null/标量不作约束，值域由用例自钉）。
+	validatePipelineExpect(ctx, m["expect"], "graph", false, reg, res)
+	res.Cases++
+}
+
+// validatePaginateCase paginate-semantics 用例形状：graph + options（[] 空数组 = 无选项，
+// PHP 空关联数组 wire 形态；对象形态键集 {pageHeight?, truncate?} 严格解码）
+// + expect = {pages: [页 graph…]} | {errorCode}。
+func validatePaginateCase(relPath string, idx int, raw json.RawMessage, reg *codeRegistry, seenCaseNames map[string]string, res *Result) {
+	m, ctx := caseIdentity(relPath, idx, raw, seenCaseNames, res)
+	if m == nil {
+		return
+	}
+
+	if err := checkKeys(m, paginateCaseKeys, nil, ctx); err != nil {
+		res.err(err)
+		return
+	}
+	if _, err := decodeStringField(m, "description", ctx); err != nil {
+		res.err(err)
+		return
+	}
+	if err := requireObjectField(m, "graph", ctx); err != nil {
+		res.err(err)
+		return
+	}
+	if err := validatePaginateOptions(m["options"], ctx+"：options", res); err != nil {
+		res.err(err)
+		return
+	}
+	validatePipelineExpect(ctx, m["expect"], "pages", true, reg, res)
+	res.Cases++
+}
+
+// validatePaginateOptions options 信封形状：[] （空数组，与无选项同义）| 对象
+// {pageHeight?: 整数, truncate?: 布尔}（严格解码，未知键即红；对象内容语义归实现）。
+func validatePaginateOptions(raw json.RawMessage, ctx string, res *Result) error {
+	trimmed := strings.TrimSpace(string(raw))
+	if trimmed == "[]" {
+		return nil
+	}
+	m, err := decodeObject(raw, ctx)
+	if err != nil {
+		return fmt.Errorf("%s 应为空数组或对象（[] = 无选项）", ctx)
+	}
+	if err := checkKeys(m, nil, []string{"pageHeight", "truncate"}, ctx); err != nil {
+		return err
+	}
+	if raw, ok := m["pageHeight"]; ok {
+		if _, err := decodeIntField(raw, "pageHeight", ctx); err != nil {
+			return err
+		}
+	}
+	if raw, ok := m["truncate"]; ok {
+		if err := decodeBoolField(raw, "truncate", ctx); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// validateFlowCase flow-semantics 用例形状：frames（模板态声明 graph 数组，元素皆对象、不可为空）
+// + dataset（任意 JSON）+ flowChain（null 与显式 [] 同义；节点骨架 frame(int)+mode(string) 必出、
+// quota(int)/omitIfEmpty(bool) 类型钉死、未知键放行——语料携带实现必须拒绝的负形态）
+// + expect = {canvases: [canvas graph…]} | {errorCode}。
+func validateFlowCase(relPath string, idx int, raw json.RawMessage, reg *codeRegistry, seenCaseNames map[string]string, res *Result) {
+	m, ctx := caseIdentity(relPath, idx, raw, seenCaseNames, res)
+	if m == nil {
+		return
+	}
+
+	if err := checkKeys(m, flowCaseKeys, nil, ctx); err != nil {
+		res.err(err)
+		return
+	}
+	if _, err := decodeStringField(m, "description", ctx); err != nil {
+		res.err(err)
+		return
+	}
+	framesRaw, err := decodeArrayField(m, "frames", ctx)
+	if err != nil {
+		res.err(err)
+		return
+	}
+	if len(framesRaw) == 0 {
+		// frames 空数组 = 实现端入口守卫（frames_empty，调用方编程错误、不立锚点 code，
+		// 裁决见 spec/pipeline.md §2/§4）——语义不可由语料钉（错误断言只落 code），语料不收此形态。
+		res.errf("%s：frames 不可为空数组（空 frames 是实现端入口守卫，不入语料面）", ctx)
+		return
+	}
+	for i, frameRaw := range framesRaw {
+		if _, err := decodeObject(frameRaw, fmt.Sprintf("%s：frames[%d]", ctx, i)); err != nil {
+			res.errf("%s：frames[%d] 应为对象", ctx, i)
+		}
+	}
+	// dataset 形状 = 任意 JSON（与 expand 同款：payload 面，值域由用例自钉）。
+	validateFlowChain(m["flowChain"], ctx+"：flowChain", res)
+	validatePipelineExpect(ctx, m["expect"], "canvases", true, reg, res)
+	res.Cases++
+}
+
+// validateFlowChain 节点骨架校验：frame 整数 + mode 字符串必出；quota 整数、omitIfEmpty
+// 布尔出则类型钉死；未知键放行（payload 面负形态，钉例 flow:unknown-key-rejected）。
+// 枚举闭面（mode ∈ fixed|paged）、quota ≥ 0、frame 越界等语义校验归实现（flow_chain_invalid），
+// 语料负形态必须可达——validate 不预演语义裁决（工具非规范性，GOVERNANCE §8）。
+func validateFlowChain(raw json.RawMessage, ctx string, res *Result) {
+	trimmed := strings.TrimSpace(string(raw))
+	if trimmed == "null" || trimmed == "[]" {
+		return
+	}
+	nodes, err := decodeArrayRaw(raw, ctx)
+	if err != nil {
+		res.err(err)
+		return
+	}
+	for i, nodeRaw := range nodes {
+		nodeCtx := fmt.Sprintf("%s[%d]", ctx, i)
+		node, err := decodeObject(nodeRaw, nodeCtx)
+		if err != nil {
+			res.errf("%s 应为对象", nodeCtx)
+			continue
+		}
+		if raw, ok := node["frame"]; ok {
+			if _, err := decodeIntField(raw, "frame", nodeCtx); err != nil {
+				res.err(err)
+			}
+		} else {
+			res.errf("%s：缺少键 %q", nodeCtx, "frame")
+		}
+		if _, ok := node["mode"]; ok {
+			if _, err := decodeStringField(node, "mode", nodeCtx); err != nil {
+				res.err(err)
+			}
+		} else {
+			res.errf("%s：缺少键 %q", nodeCtx, "mode")
+		}
+		if raw, ok := node["quota"]; ok {
+			if _, err := decodeIntField(raw, "quota", nodeCtx); err != nil {
+				res.err(err)
+			}
+		}
+		if raw, ok := node["omitIfEmpty"]; ok {
+			if err := decodeBoolField(raw, "omitIfEmpty", nodeCtx); err != nil {
+				res.err(err)
+			}
+		}
+	}
+}
+
+// validatePipelineExpect 管线三契约共享的 expect 形状：{<payloadKey>: …} | {errorCode}
+// 二选一。payloadIsArray = false 要求载荷为对象（填充产物单图），= true 要求对象数组
+// （页/画布序列，允许空数组——零产物用例形态留口）。errorCode 走注册表白名单。
+func validatePipelineExpect(caseCtx string, raw json.RawMessage, payloadKey string, payloadIsArray bool, reg *codeRegistry, res *Result) {
+	ctx := caseCtx + "：expect"
+	m, err := decodeObject(raw, ctx)
+	if err != nil {
+		res.errf("%s 应为 {%s} 或 {errorCode} 对象", ctx, payloadKey)
+		return
+	}
+	_, hasPayload := m[payloadKey]
+	code, hasCode := m["errorCode"]
+	if hasPayload == hasCode {
+		res.errf("%s 应为 {%s} 或 {errorCode} 二选一", ctx, payloadKey)
+		return
+	}
+	if hasCode {
+		if err := checkKeys(m, []string{"errorCode"}, nil, ctx); err != nil {
+			res.err(err)
+			return
+		}
+		var s string
+		if err := json.Unmarshal(code, &s); err != nil {
+			res.errf("%s：键 %q 应为字符串", ctx, "errorCode")
+			return
+		}
+		checkErrorCode(ctx, s, reg, res)
+		return
+	}
+	if err := checkKeys(m, []string{payloadKey}, nil, ctx); err != nil {
+		res.err(err)
+		return
+	}
+	if !payloadIsArray {
+		if err := requireObjectField(m, payloadKey, ctx); err != nil {
+			res.err(err)
+		}
+		return
+	}
+	items, err := decodeArrayRaw(m[payloadKey], fmt.Sprintf("%s：键 %q", ctx, payloadKey))
+	if err != nil {
+		res.errf("%s：键 %q 应为数组", ctx, payloadKey)
+		return
+	}
+	for i, item := range items {
+		if _, err := decodeObject(item, fmt.Sprintf("%s.%s[%d]", ctx, payloadKey, i)); err != nil {
+			res.errf("%s.%s[%d] 应为对象", ctx, payloadKey, i)
+		}
+	}
+}
+
 // validateDateTokens dateTokens 转译表（仅 expression-eval 的 fn-date.json）：moment 风格
 // token 逐行自含语义，sample 钉死样例时刻（GOVERNANCE §3.3，权威数据随语料发布）。
 func validateDateTokens(raw json.RawMessage, ctx string, res *Result) {
@@ -629,6 +867,53 @@ func decodeStringField(m map[string]json.RawMessage, key, ctx string) (string, e
 		return "", fmt.Errorf("%s：键 %q 应为字符串", ctx, key)
 	}
 	return s, nil
+}
+
+// intLiteralRe 整数字面量（十进制，无小数/指数；字符串形态 "0" 不合语料整数惯例即红）。
+var intLiteralRe = regexp.MustCompile(`^-?[0-9]+$`)
+
+// decodeIntField 整数字段：只认 JSON number 的十进制整数字面量。
+func decodeIntField(raw json.RawMessage, key, ctx string) (int64, error) {
+	s := strings.TrimSpace(string(raw))
+	if !intLiteralRe.MatchString(s) {
+		return 0, fmt.Errorf("%s：键 %q 应为整数", ctx, key)
+	}
+	v, err := strconv.ParseInt(s, 10, 64)
+	if err != nil {
+		return 0, fmt.Errorf("%s：键 %q 应为整数", ctx, key)
+	}
+	return v, nil
+}
+
+// decodeArrayRaw 原始 JSON 数组解码（ctx 为该数组位的定位描述）。
+func decodeArrayRaw(raw json.RawMessage, ctx string) ([]json.RawMessage, error) {
+	var arr []json.RawMessage
+	if err := json.Unmarshal(raw, &arr); err != nil {
+		return nil, fmt.Errorf("%s 应为数组", ctx)
+	}
+	return arr, nil
+}
+
+// decodeBoolField 布尔字段。
+func decodeBoolField(raw json.RawMessage, key, ctx string) error {
+	var b bool
+	if err := json.Unmarshal(raw, &b); err != nil {
+		return fmt.Errorf("%s：键 %q 应为布尔", ctx, key)
+	}
+	return nil
+}
+
+// requireObjectField 键存在且为 JSON 对象（数组/标量即红，消息统一「键 %q 应为对象」）。
+func requireObjectField(m map[string]json.RawMessage, key, ctx string) error {
+	raw, ok := m[key]
+	if !ok {
+		return fmt.Errorf("%s：缺少键 %q", ctx, key)
+	}
+	var obj map[string]json.RawMessage
+	if err := json.Unmarshal(raw, &obj); err != nil {
+		return fmt.Errorf("%s：键 %q 应为对象", ctx, key)
+	}
+	return nil
 }
 
 func decodeStringOrNullField(m map[string]json.RawMessage, key, ctx string) (*string, error) {

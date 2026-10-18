@@ -3,7 +3,24 @@
   "codes": [
     "expression_syntax_error",
     "expression_type_mismatch",
-    "expression_row_outside_loop"
+    "expression_row_outside_loop",
+    "expression_empty_resource",
+    "expression_resource_single_ref",
+    "reserved_root_key",
+    "unknown_layer_type",
+    "template_rows_conflict",
+    "rows_path_missing",
+    "rows_path_invalid",
+    "flow_chain_invalid",
+    "flow_rows_path_inconsistent",
+    "content_overflow",
+    "paginate_target_invalid",
+    "page_geometry_invalid",
+    "resource_download_failed",
+    "resource_save_failed",
+    "qr_generate_failed",
+    "render_cancelled",
+    "render_deadline_exceeded"
   ],
   "reserved": []
 }

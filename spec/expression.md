@@ -9,7 +9,7 @@
   - **值面宽松**：数据逐行变化，某行缺键/不可解析不炸整批——缺字段/null/空串 = 空串信号，不可解析 = 原文直通（打印物场景数据不丢、「没格式化」肉眼可见）。钉例：`path:missing-row-field-empty-signal`、`path:null-mid-path-empty-signal`、`date:date-unparseable-passthrough`、`fn-number:number-unparseable-passthrough`。
   - **文法/签名面 fail-fast**：模板内写死的、数据无关的确定性错误（未知函数、参数个数、结构错、n 超界、格式串白名单外字母）报错优于整批静默输出错误内容；全部并入 `expression_syntax_error`，零新 code（§5）。钉例：`shell:unknown-function-fails-fast`、`shell:call-structure-arg-garbage`、`fn-number:number-n-out-of-range`、`fn-date:date-unknown-token`。
 - **求值原子性**：模板求值是原子操作——任一片段 fail-fast 即整次求值失败、无部分产物（错误用例 `expect = {errorCode}` 的编码即此语义）。
-- **范围切分**：资源表达式单值门（ADR 0020）不在求值器——文本插值语义零变化，违例/合法形态的 hydrate 级判定锁在 expand-semantics 契约（`expression_resource_single_ref`，随工票 04 迁入）。数据集根键的保留名禁用（`row`、`$` 前缀）属编译/填充面校验，求值面不重钉。行循环 `$index` 自 1 起的供给语义归填充契约，求值器只认上下文供给值。
+- **范围切分**：资源表达式单值门（ADR 0020）不在求值器——文本插值语义零变化，违例/合法形态的 hydrate 级判定锁在 expand-semantics 契约（`expression_resource_single_ref`，已随工票 04 迁入，钉例见 `pipeline.md` §1）。数据集根键的保留名禁用（`row`、`$` 前缀）属编译/填充面校验，求值面不重钉。行循环 `$index` 自 1 起的供给语义归填充契约，求值器只认上下文供给值。
 - 编辑器红标只认结构面（扫描契约 `expression-scan` 的 `error` 字段只承载结构错，未知函数名不在编辑器标红）；函数名单校验是求值端义务。
 - 一致性边界：语料锁**默认求值器**（受限插值）语义；实现可经求值器注入口换实现，但声明支持本契约的实现必须四模块全绿。
 

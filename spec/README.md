@@ -4,8 +4,8 @@
 
 本目录正文：
 
-- `expression.md` — 表达式求值薄规格（已落笔，工票 03）：外壳文法 / 路径与求值上下文 / fn-date / fn-number 四模块的冻结面系统表述、优先级裁决与显式不保证清单；
-- `pipeline.md` — 管线薄规格（填充/流装箱/分页三步的输入输出不变量）与诊断发射顺序保证（随工票 04 落笔）；
-- `error-codes.json` — **错误 code 注册表**（canvasctl validate 的白名单数据源；active `codes` + 退役 `reserved` 区，退役 code 永不复用，`GOVERNANCE.md` §2.2）。当前登记表达式两契约的三个 code（`expression_syntax_error` / `expression_type_mismatch` / `expression_row_outside_loop`），五阶段全量注册表随工票 04 落笔。
+- `expression.md` — 表达式求值薄规格（工票 03）：外壳文法 / 路径与求值上下文 / fn-date / fn-number 四模块的冻结面系统表述、优先级裁决与显式不保证清单；
+- `pipeline.md` — 编译管线薄规格（工票 04）：填充 / 流装箱 / 分页三步的输入输出不变量与组合时序、五阶段错误分类与 code 全集、诊断路径中立记法、保留名注册表（首轮盘点）；
+- `error-codes.json` — **错误 code 注册表**（canvasctl validate 的白名单数据源；active `codes` + 退役 `reserved` 区，退役 code 永不复用，`GOVERNANCE.md` §2.2）。五阶段模型全量 20 code（工票 04 登记，阶段归属表见 `pipeline.md` §4）；首轮 reserved 为空（尚无退役 code）。
 
 编写纪律：语料用例钉得住的行为不进正文写第二遍；正文条目须能指认钉住它的语料用例（或显式声明未定义区）。

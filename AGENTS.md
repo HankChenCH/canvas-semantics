@@ -8,8 +8,8 @@
 
 - **治理**（已就位）：`GOVERNANCE.md`（MUST/MUST NOT/MAY、版本政策、提案生命周期、fail-fast 切分、自定义函数终态）、`SUPPORT-SURFACE.md`（支持面声明格式 + 模块注册表）。
 - **提案**（已就位）：`proposals/`（README 生命周期 + `0000-template.md`；语义演进的唯一通道）。
-- **薄规格正文** `spec/`：`expression.md` 已落笔（工票 03：外壳/路径/fn-date/fn-number 冻结面 + 优先级裁决 + 显式不保证）；`pipeline.md` 随工票 04 落笔；`spec/error-codes.json` 是错误 code 注册表（validate 白名单数据源，现登记表达式三 code）。
-- **语料** `corpus/<契约>/<v主.次>/<模块文件>.json`（编写规范见 `corpus/README.md`）：`expression-scan v1.0` 与 `expression-eval v2.0`（shell/path/fn-date/fn-number 四模块，工票 02/03）已入仓；其余三契约随工票 04 迁入。
+- **薄规格正文** `spec/`：`expression.md` 已落笔（工票 03：外壳/路径/fn-date/fn-number 冻结面 + 优先级裁决 + 显式不保证）；`pipeline.md` 已落笔（工票 04：填充/流装箱/分页输入输出不变量 + 五阶段错误分类 + 诊断路径中立记法 + 保留名注册表）；`spec/error-codes.json` 是错误 code 注册表（validate 白名单数据源，五阶段全量 20 code + reserved 区）。
+- **语料** `corpus/<契约>/<v主.次>/<模块文件>.json`（编写规范见 `corpus/README.md`）：五契约已全量入仓——`expression-scan v1.0`、`expression-eval v2.0`（shell/path/fn-date/fn-number 四模块，工票 02/03）、`expand-semantics v1.0`、`paginate-semantics v1.0`、`flow-semantics v1.0`（工票 04）。
 - **Go 工具** `canvasctl/`：`validate` 子命令已就位（严格 typed 解码 + 按契约分派用例形状 + 双写互检 + code 白名单 + 用例名唯一 + dateTokens 严格解码）；lint/diff/release 随后续工票。
 - 消费端声明文件在各实现仓（`<repo>/support-surface.json`），本仓只定义格式与注册表。
 
