@@ -31,4 +31,4 @@ proposal ── 转正三步一个 PR ──> integrated（文档保留为历史
 
 | 编号 | 标题 | 状态 | 提案期用例 |
 |---|---|---|---|
-| （暂无） | | | |
+| [001](0001-expression-fallback-warning.md) | 软诊断（warnings）语料面落地与 expression_fallback_empty 注册 | integrated（2026-10-18，工票 05） | 未单建（钉 PHP 权威端既有行为，正式用例随转正落 expand/flow v1.1） |

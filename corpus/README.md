@@ -20,9 +20,10 @@
 
 - **expression-scan**：`{name, description, template, expect:{parts[]}}`，part = `literal{text}` | `fragment{raw,expr,error}` | `open{text,expr}`；不含位置字段（各端索引空间自行派生），空字面一律省略。
 - **expression-eval**：`{name, description, template, context, expect}`，`expect` = 输出字符串 | `{errorCode}`；`context` 为任意 JSON 对象。存量载体的 `group` 字段已随模块文件拆分退役（归属由文件承载，残留即红）。
-- **expand-semantics**：`{name, description, graph, dataset, expect}`，`expect` = `{graph: 填充后 graph}` | `{errorCode}`；`dataset` 任意 JSON（null = 未绑数据集恒等直通用例形态）；`graph` 为不透明 wire 对象。
-- **paginate-semantics**：`{name, description, graph, options, expect}`，`options` = 空数组 `[]`（= 无选项，PHP 空关联数组 wire 形态）| `{pageHeight: int, truncate?: bool}`（信封严格解码）；`expect` = `{pages: [页 graph…]}` | `{errorCode}`。
-- **flow-semantics**：`{name, description, frames, dataset, flowChain, expect}`，`frames` = 模板态声明 graph 数组（非空）；`flowChain` = null | 节点数组（节点骨架 `frame: int` + `mode: string` 必出、`quota: int` / `omitIfEmpty: bool` 出则类型钉死；**未知键放行**——语料故意携带实现必须拒绝的负形态如 `flow:unknown-key-rejected`，枚举闭面/quota≥0/frame 越界等校验语义归实现）；`expect` = `{canvases: [canvas graph…]}` | `{errorCode}`。
+- **expand-semantics**：`{name, description, graph, dataset, expect}`，`expect` = `{graph: 填充后 graph, warnings?: [{code, path}]}` | `{errorCode}`；`dataset` 任意 JSON（null = 未绑数据集恒等直通用例形态）；`graph` 为不透明 wire 对象。
+- **paginate-semantics**：`{name, description, graph, options, expect}`，`options` = 空数组 `[]`（= 无选项，PHP 空关联数组 wire 形态）| `{pageHeight: int, truncate?: bool}`（信封严格解码）；`expect` = `{pages: [页 graph…]}` | `{errorCode}`（分页段输入为 hydrate 产物、无诊断发射面，expect 不收 warnings）。
+- **flow-semantics**：`{name, description, frames, dataset, flowChain, expect}`，`frames` = 模板态声明 graph 数组（非空）；`flowChain` = null | 节点数组（节点骨架 `frame: int` + `mode: string` 必出、`quota: int` / `omitIfEmpty: bool` 出则类型钉死；**未知键放行**——语料故意携带实现必须拒绝的负形态如 `flow:unknown-key-rejected`，枚举闭面/quota≥0/frame 越界等校验语义归实现）；`expect` = `{canvases: [canvas graph…], warnings?: [{code, path}]}` | `{errorCode}`。
+- **warnings 期望诊断序列**（expand/flow v1.1，工票 05）：软诊断语料面——`warnings` = `[{code, path}]`（code 注册表白名单、path 中立记法字符串、序列序 = 期望发射序），省略 = 空序列；断言面不含 message（人读可本地化）；`errorCode` 分支不携带 warnings。现役发射面 = hydrate 文案类表达式兜底空串 `expression_fallback_empty`（`../spec/pipeline.md` §4）。
 - **dateTokens 转译表**：仅 `fn-date.json` 允许携带（`{sample, rows:[{token, semantics, expect}]}`，sample 钉死样例时刻）。
 - **信封严 / 载荷宽的切分**（本轮成文的工具裁决，validate.go 注释同步）：严格解码（未知字段即红）作用于语料文档自身的结构面——用例顶层键集、`meta`、`expect` 信封；管线三契约的图载荷（`graph` / `frames` / `dataset`）是**被测实现的输入数据**，validate 只钉「是对象/是数组」的骨架——语料故意携带「实现必须拒绝/透传」的负形态（如 `flow:unknown-key-rejected`、`flow:unknown-mode-rejected`），预演语义裁决即越权（`GOVERNANCE.md` §8）。
 - 管线三契约的 `expect` 载荷语义（graph/pages/canvases 产物面）不作结构约束——产物逐字段比对归各端 runner；validate 只钉信封与 errorCode 白名单。
@@ -31,6 +32,6 @@
 ## 语料设计纪律
 
 - **数值十进制字符串表示**：数值语义锚定在值的最短往返十进制串上；数字族可解析输入只收严格十进制串 `-?\d+(\.\d+)?` 与常规区间数值，科学计数法等形态以「不可解析原文直通」用例钉定；超出十进制字符串语义的极端浮点用例**不得入集**（显式不保证清单见 `../spec/expression.md` §6）。
-- **诊断路径中立记法**：诊断与消息文案中定位产物树节点，一律沿用既有**数组索引形态**（升格为中立记法，不另造新记法，`GOVERNANCE.md` §9；权威定义见 `../spec/pipeline.md` §5）：产物树根相对点路径 + 十进制数组下标方括号——`layers[0].rows[1].cells[0]`、`layers[0].content`、`layers[0].data.value`、`layers[0].children[1][0]`，帧面根 `frames[i]`。语料错误断言只落 code，路径只出现在消息文案与诊断 `path` 字段（其断言面随 warnings 语料落地，工票 05）。
+- **诊断路径中立记法**：诊断与消息文案中定位产物树节点，一律沿用既有**数组索引形态**（升格为中立记法，不另造新记法，`GOVERNANCE.md` §9；权威定义见 `../spec/pipeline.md` §5）：产物树根相对点路径 + 十进制数组下标方括号——`layers[0].rows[1].cells[0]`、`layers[0].content`、`layers[0].data.value`、`layers[0].children[1][0]`，帧面根 `frames[i]`。语料错误断言只落 code；路径断言面 = warnings 期望序列的 `path` 字段（expand/flow v1.1 落地，工票 05）。
 - **用例自含**：同组用例共享 context 样本时逐用例全量复制、逐字节一致，不引入共享 fixture 引用——单条用例可独立摘取运行。
 - **迁移对账**：外部契约迁入 = 机械搬运 + 程序对账（迁移前后用例集合按用例名逐字段深比较零差异；跨文件顺序按模块聚合、文件内保持原相对顺序），`meta` 收敛为 contract 标识 + 出处注记，语义注记一律升格 `../spec/` 正文。

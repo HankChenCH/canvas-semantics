@@ -457,7 +457,7 @@ func validateExpandCase(relPath string, idx int, raw json.RawMessage, reg *codeR
 		return
 	}
 	// dataset 形状 = 任意 JSON（对象/null/标量不作约束，值域由用例自钉）。
-	validatePipelineExpect(ctx, m["expect"], "graph", false, reg, res)
+	validatePipelineExpect(ctx, m["expect"], "graph", false, true, reg, res)
 	res.Cases++
 }
 
@@ -486,7 +486,7 @@ func validatePaginateCase(relPath string, idx int, raw json.RawMessage, reg *cod
 		res.err(err)
 		return
 	}
-	validatePipelineExpect(ctx, m["expect"], "pages", true, reg, res)
+	validatePipelineExpect(ctx, m["expect"], "pages", true, false, reg, res)
 	res.Cases++
 }
 
@@ -553,7 +553,7 @@ func validateFlowCase(relPath string, idx int, raw json.RawMessage, reg *codeReg
 	}
 	// dataset 形状 = 任意 JSON（与 expand 同款：payload 面，值域由用例自钉）。
 	validateFlowChain(m["flowChain"], ctx+"：flowChain", res)
-	validatePipelineExpect(ctx, m["expect"], "canvases", true, reg, res)
+	validatePipelineExpect(ctx, m["expect"], "canvases", true, true, reg, res)
 	res.Cases++
 }
 
@@ -605,10 +605,12 @@ func validateFlowChain(raw json.RawMessage, ctx string, res *Result) {
 	}
 }
 
-// validatePipelineExpect 管线三契约共享的 expect 形状：{<payloadKey>: …} | {errorCode}
-// 二选一。payloadIsArray = false 要求载荷为对象（填充产物单图），= true 要求对象数组
-// （页/画布序列，允许空数组——零产物用例形态留口）。errorCode 走注册表白名单。
-func validatePipelineExpect(caseCtx string, raw json.RawMessage, payloadKey string, payloadIsArray bool, reg *codeRegistry, res *Result) {
+// validatePipelineExpect 管线三契约共享的 expect 形状：{<payloadKey>: …, warnings?} |
+// {errorCode} 二选一。payloadIsArray = false 要求载荷为对象（填充产物单图），= true
+// 要求对象数组（页/画布序列，允许空数组——零产物用例形态留口）。errorCode 走注册表
+// 白名单。allowWarnings = 该契约 expect 允携带软诊断期望序列 warnings（工票 05：
+// expand/flow 有诊断发射面，paginate 输入为 hydrate 产物、无发射面即不允许）。
+func validatePipelineExpect(caseCtx string, raw json.RawMessage, payloadKey string, payloadIsArray bool, allowWarnings bool, reg *codeRegistry, res *Result) {
 	ctx := caseCtx + "：expect"
 	m, err := decodeObject(raw, ctx)
 	if err != nil {
@@ -634,9 +636,19 @@ func validatePipelineExpect(caseCtx string, raw json.RawMessage, payloadKey stri
 		checkErrorCode(ctx, s, reg, res)
 		return
 	}
-	if err := checkKeys(m, []string{payloadKey}, nil, ctx); err != nil {
+	// warnings = 期望诊断序列（软诊断语料面，GOVERNANCE §3.4）：可选伴随键，
+	// 省略 = 空序列；条目断言面只落 code（注册表白名单）+ path（中立记法），
+	// 消息人读可本地化、不入断言面（spec/pipeline.md §4/§5）。
+	allowed := []string{payloadKey}
+	if allowWarnings {
+		allowed = append(allowed, "warnings")
+	}
+	if err := checkKeys(m, []string{payloadKey}, allowed, ctx); err != nil {
 		res.err(err)
 		return
+	}
+	if raw, ok := m["warnings"]; ok {
+		validateWarnings(raw, ctx, reg, res)
 	}
 	if !payloadIsArray {
 		if err := requireObjectField(m, payloadKey, ctx); err != nil {
@@ -652,6 +664,40 @@ func validatePipelineExpect(caseCtx string, raw json.RawMessage, payloadKey stri
 	for i, item := range items {
 		if _, err := decodeObject(item, fmt.Sprintf("%s.%s[%d]", ctx, payloadKey, i)); err != nil {
 			res.errf("%s.%s[%d] 应为对象", ctx, payloadKey, i)
+		}
+	}
+}
+
+// validateWarnings 期望诊断序列形状：逐条目 {code: 字符串（注册表白名单）,
+// path?: 字符串（中立记法，语义归 runner 比对）}；序列序 = 期望发射序。
+func validateWarnings(raw json.RawMessage, expectCtx string, reg *codeRegistry, res *Result) {
+	ctx := expectCtx + "：warnings"
+	items, err := decodeArrayRaw(raw, ctx)
+	if err != nil {
+		res.errf("%s 应为数组", ctx)
+		return
+	}
+	for i, item := range items {
+		itemCtx := fmt.Sprintf("%s[%d]", ctx, i)
+		m, err := decodeObject(item, itemCtx)
+		if err != nil {
+			res.errf("%s 应为对象", itemCtx)
+			continue
+		}
+		if err := checkKeys(m, []string{"code"}, []string{"code", "path"}, itemCtx); err != nil {
+			res.err(err)
+			continue
+		}
+		code, err := decodeStringField(m, "code", itemCtx)
+		if err != nil {
+			res.err(err)
+			continue
+		}
+		checkErrorCode(itemCtx, code, reg, res)
+		if _, ok := m["path"]; ok {
+			if _, err := decodeStringField(m, "path", itemCtx); err != nil {
+				res.err(err)
+			}
 		}
 	}
 }

@@ -642,6 +642,7 @@ func pipelineRegistry() string {
 		m["codes"] = []any{
 			"expression_syntax_error", "expression_type_mismatch", "expression_row_outside_loop",
 			"rows_path_invalid", "content_overflow", "flow_chain_invalid",
+			"expression_fallback_empty",
 		}
 	})
 }
@@ -1003,6 +1004,124 @@ func TestValidatePipelineTable(t *testing.T) {
 			},
 			wantErrCount: 1,
 			wantSubstrs:  []string{`错误 code "flow_unknown_error" 不在注册表`},
+		},
+		// ---- 软诊断期望序列（warnings 面，工票 05）：断言面 = code（白名单）+ path，
+		// 消息不入断言面；expand/flow 有诊断面，paginate 无
+		{
+			name: "绿：expand expect.warnings 合法序列（code 白名单内 + path）",
+			files: map[string]string{
+				"spec/error-codes.json": pipelineRegistry(),
+				"corpus/expand-semantics/v1.0/expand.json": expandDoc(func(m map[string]any) {
+					cases := m["cases"].([]any)
+					cases[0].(map[string]any)["expect"] = map[string]any{
+						"graph": minGraph(),
+						"warnings": []any{
+							map[string]any{"code": "expression_fallback_empty", "path": "layers[0].data.value"},
+						},
+					}
+				}),
+			},
+			wantErrCount: 0,
+		},
+		{
+			name: "绿：flow expect.warnings 多条序列（诊断 path 中立记法）",
+			files: map[string]string{
+				"spec/error-codes.json": pipelineRegistry(),
+				"corpus/flow-semantics/v1.0/flow.json": flowDoc(func(m map[string]any) {
+					cases := m["cases"].([]any)
+					expect := cases[0].(map[string]any)["expect"].(map[string]any)
+					expect["warnings"] = []any{
+						map[string]any{"code": "expression_fallback_empty", "path": "layers[0].rows[0].cells[0].content.data.value"},
+						map[string]any{"code": "expression_fallback_empty", "path": "layers[0].rows[1].cells[0].content.data.value"},
+					}
+				}),
+			},
+			wantErrCount: 0,
+		},
+		{
+			name: "红：warnings code 未注册（code 扩充走提案通道）",
+			files: map[string]string{
+				"spec/error-codes.json": pipelineRegistry(),
+				"corpus/expand-semantics/v1.0/expand.json": expandDoc(func(m map[string]any) {
+					cases := m["cases"].([]any)
+					cases[0].(map[string]any)["expect"].(map[string]any)["warnings"] = []any{
+						map[string]any{"code": "expression_fallback_truncated", "path": "layers[0].data.value"},
+					}
+				}),
+			},
+			wantErrCount: 1,
+			wantSubstrs:  []string{`错误 code "expression_fallback_truncated" 不在注册表`},
+		},
+		{
+			name: "红：warnings 条目缺 code",
+			files: map[string]string{
+				"spec/error-codes.json": pipelineRegistry(),
+				"corpus/expand-semantics/v1.0/expand.json": expandDoc(func(m map[string]any) {
+					cases := m["cases"].([]any)
+					cases[0].(map[string]any)["expect"].(map[string]any)["warnings"] = []any{
+						map[string]any{"path": "layers[0].data.value"},
+					}
+				}),
+			},
+			wantErrCount: 1,
+			wantSubstrs:  []string{`缺少键 "code"`},
+		},
+		{
+			name: "红：warnings 条目携带 message（消息人读不入断言面）",
+			files: map[string]string{
+				"spec/error-codes.json": pipelineRegistry(),
+				"corpus/expand-semantics/v1.0/expand.json": expandDoc(func(m map[string]any) {
+					cases := m["cases"].([]any)
+					cases[0].(map[string]any)["expect"].(map[string]any)["warnings"] = []any{
+						map[string]any{"code": "rows_path_invalid", "path": "layers[0].data.value", "message": "文案表达式 x 求值为空串"},
+					}
+				}),
+			},
+			wantErrCount: 1,
+			wantSubstrs:  []string{`未知键 "message"`},
+		},
+		{
+			name: "红：warnings path 类型坏",
+			files: map[string]string{
+				"spec/error-codes.json": pipelineRegistry(),
+				"corpus/expand-semantics/v1.0/expand.json": expandDoc(func(m map[string]any) {
+					cases := m["cases"].([]any)
+					cases[0].(map[string]any)["expect"].(map[string]any)["warnings"] = []any{
+						map[string]any{"code": "rows_path_invalid", "path": 3},
+					}
+				}),
+			},
+			wantErrCount: 1,
+			wantSubstrs:  []string{`"path" 应为字符串`},
+		},
+		{
+			name: "红：expand expect = {errorCode, warnings} 互斥破坏",
+			files: map[string]string{
+				"spec/error-codes.json": pipelineRegistry(),
+				"corpus/expand-semantics/v1.0/expand.json": expandDoc(func(m map[string]any) {
+					cases := m["cases"].([]any)
+					cases[0].(map[string]any)["expect"] = map[string]any{
+						"errorCode": "rows_path_invalid",
+						"warnings":  []any{map[string]any{"code": "rows_path_invalid"}},
+					}
+				}),
+			},
+			wantErrCount: 1,
+			wantSubstrs:  []string{`未知键 "warnings"`},
+		},
+		{
+			name: "红：paginate expect 带 warnings（分页段无诊断发射面）",
+			files: map[string]string{
+				"spec/error-codes.json": pipelineRegistry(),
+				"corpus/paginate-semantics/v1.0/paginate.json": paginateDoc(func(m map[string]any) {
+					cases := m["cases"].([]any)
+					cases[0].(map[string]any)["expect"].(map[string]any)["warnings"] = []any{
+						map[string]any{"code": "rows_path_invalid", "path": "layers[0].data.value"},
+					}
+				}),
+			},
+			wantErrCount: 1,
+			wantSubstrs:  []string{`未知键 "warnings"`},
 		},
 	}
 	for _, tt := range tests {

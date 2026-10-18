@@ -6,6 +6,7 @@
     "expression_row_outside_loop",
     "expression_empty_resource",
     "expression_resource_single_ref",
+    "expression_fallback_empty",
     "reserved_root_key",
     "unknown_layer_type",
     "template_rows_conflict",

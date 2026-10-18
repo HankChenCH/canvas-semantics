@@ -1,6 +1,6 @@
-# pipeline.md — 编译管线薄规格（expand / flow / paginate v1.0）
+# pipeline.md — 编译管线薄规格（expand / flow v1.1，paginate v1.0）
 
-语义权威 = `corpus/expand-semantics/v1.0/` + `corpus/flow-semantics/v1.0/` + `corpus/paginate-semantics/v1.0/` 三契约语料 + 本正文（`GOVERNANCE.md` §0）。表达式求值（语料内部消费的求值器语义）归 `expression.md`，本正文只钉三步管线的输入输出不变量、组合时序与错误分类。条目以「契约缩写:用例名」指认钉住它的用例（expand: / flow: / paginate:）；标注 **[未钉]** 的条目是语料暂无用例的现状裁决，可随次版本补用例升格。
+语义权威 = `corpus/expand-semantics/v1.1/` + `corpus/flow-semantics/v1.1/` + `corpus/paginate-semantics/v1.0/` 三契约语料 + 本正文（`GOVERNANCE.md` §0）。表达式求值（语料内部消费的求值器语义）归 `expression.md`，本正文只钉三步管线的输入输出不变量、组合时序与错误分类。条目以「契约缩写:用例名」指认钉住它的用例（expand: / flow: / paginate:）；标注 **[未钉]** 的条目是语料暂无用例的现状裁决，可随次版本补用例升格。
 
 ## 0. 总览：管线组合与阶段模型
 
@@ -58,7 +58,7 @@
 - **注册表无阶段维度（工具面现状）**：validate 的 code 白名单对全表一视同仁、不区分阶段——绘制期 code 在语料中不可达是 §7 的显式声明而非工具强制；若未来需要「阶段 × 契约可达面」的更严校验，走提案 + 工具演进（仍非规范性）。
 - **绘制期 code 不进语料**（显式声明）：物化是渲染面 I/O（网络/磁盘/QR 生成/取消控制），不在编译语义产物内、语料不可执行钉定——其行为面由实现仓测试钉。`render_cancelled` / `render_deadline_exceeded` 与下载流超时（归 `resource_download_failed`）的边界裁决见工作区 `.scratch/canvas-compiler/spec.md` §5.2。
 - **`frames_empty` 不是 code**：入口守卫（调用方编程错误），永不进注册表、实现不得私升为锚点（§2）。
-- **软诊断（warnings）面**：硬失败走异常（上表），策略性软失败走 `Diagnostic{code, message, path?}` 收集通道（不中断管线）。现役发射面唯一：文案类表达式兜底空串 = `expression_fallback_empty`。其语料可执行面（期望诊断序列）随工票 05（Go warnings 缝）落笔——本版语料三契约 `expect` 无诊断序列字段，**[未钉]**：软诊断 code 暂不在注册表、发射序无跨端保证。
+- **软诊断（warnings）面**：硬失败走异常（上表），策略性软失败走 `Diagnostic{code, message, path?}` 收集通道（不中断管线）。现役发射面唯一：文案类表达式兜底空串 = `expression_fallback_empty`（注册表 active 区，code 扩充走提案通道，`GOVERNANCE.md` §3.4）。其语料可执行面自 expand/flow v1.1 落地（工票 05，提案 0001）：`expect` 增可选 `warnings` 期望序列键 `[{code, path}]`，省略 = 空序列；`errorCode` 分支不携带 warnings（硬失败即无软诊断汇入）。钉例：expand:text-fallback-single-warning-path（独立图层 path 形态 + 命中不发射）、expand:text-fallback-template-row-sequence（实例行序列）、expand:text-fallback-v1-row-path（V1 表 path 形态）、flow:text-fallback-warnings-full-hydrate（流路径全量 hydrate 面）。
 
 ## 5. 诊断路径中立记法
 
@@ -66,7 +66,7 @@
 
 - **形态**：产物树根相对点路径 + 数组下标方括号——`layers[0].rows[1].cells[0]`、`layers[0].content`、`layers[0].data.value`、`layers[0].children[1][0]`（children 为「子表键.实例序」两级下标）；帧面根 `frames[i]`。
 - **字符集**：段为裸键名（不做转义、不引号）或十进制数组下标；分隔符 `.`；下标括号 `[n]`。不采用 JSON Pointer（`/` 分隔）等异形态。
-- **落点**：诊断 `path` 字段与消息文案定位段；错误断言在语料中只落 code、消息与 path 不进断言面（用例形状钉定），path 字段的语料断言随 warnings 语料面（工票 05）落地。
+- **落点**：诊断 `path` 字段与消息文案定位段；错误断言在语料中只落 code、消息不进断言面（用例形状钉定）；诊断 `path` 字段自 warnings 语料面（expand/flow v1.1，工票 05）进入断言面——逐条目 `{code, path}` 断言，validate 钉 `path` 为字符串（中立记法的取值形态归各端 runner 比对，本记法即其共同参照）。
 
 ## 6. 保留名注册表（首轮盘点）
 
@@ -84,4 +84,4 @@
 - **绘制期（物化）行为不入语料**：资源下载/落盘/QR 生成/渲染取消与截止——渲染面 I/O，错误行为由实现仓测试钉（§4）；编译管线对其唯一承诺 = 求值产物为字面资源引用、填充 fail-fast 先于物化。
 - **layout / 排版语义不入语料**：断行度量、行高定稿的度量来源、位图裁剪渲染——wire 字节面权威不动（`GOVERNANCE.md` §0）；语料只钉装箱与回写的结构行为面（行高以用例给定值为准）。
 - **具体装箱边界数值**：切分点（每页行数）是装箱产物、逐用例钉定；未钉的边界组合（浮点行高累加误差等）不承诺跨端一致。
-- **诊断发射序**：warnings 收集序在多节点场景无跨端保证 **[未钉]**（现役发射面单一，工票 05 引入序列断言时一并钉）。
+- **诊断发射序**（expand/flow v1.1 钉定）：warnings 收集序 = 帧序 → 图层文档序 → 行/格/内容声明序，由语料期望序列逐用例锁住（expand:text-fallback-template-row-sequence、flow:text-fallback-warnings-full-hydrate）；流路径 warnings 反映分配前的全量 hydrate（每帧模板表吃全量行实例）、按帧序累积、不带帧标识（帧标识升格走 spec 版本）。
