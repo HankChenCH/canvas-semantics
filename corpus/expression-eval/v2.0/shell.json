@@ -1,0 +1,375 @@
+{
+  "meta": {
+    "contract": "expression-eval v2.0",
+    "notes": [
+      "迁自 go-canvas/hydrate/testdata/expression-eval.json（PHP 权威导出脚本 php-canvas-next/scripts/export-hydrate-fixtures.php 的导出载体，2026-10-18，工票 03），自此手维护为本仓语义权威，用例逐字段原样搬运；",
+      "模块拆分：原载体单文件且每例带 group（value|date|number），拆分后归属由模块文件承载、group 字段退役——date→fn-date、number→fn-number，value 32 例按语义面拆归 shell（17：切分/片段分类/调用文法）与 path（15：取值/上下文/保留名）；",
+      "存量 meta.contract v2 归一为 v2.0、generator 字段退役（GOVERNANCE §4/§9）；原 meta.notes 中的语义注记（分轴哲学、fail-fast 错误分类、求值上下文形状、极端浮点不保证等）升格薄规格 spec/expression.md；",
+      "迁移期间消费仓零感知：go-canvas 仍读旧位置，消费翻转随工票 06/07。",
+      "本文件对应支持面注册表模块 shell（mustache 外壳与片段切分语义，SUPPORT-SURFACE.md §2）；权威正文 spec/expression.md。"
+    ]
+  },
+  "cases": [
+    {
+      "name": "multiple-fragments-concatenate",
+      "description": "多片段拼接（根键 + 行字段）",
+      "template": "{{orderNo}}-{{row.name}}",
+      "context": {
+        "row": {
+          "name": "张三",
+          "user": {
+            "city": "杭州"
+          },
+          "score": 98.5
+        },
+        "$index": 3,
+        "orderNo": "A2026-001"
+      },
+      "expect": "A2026-001-张三"
+    },
+    {
+      "name": "whitespace-inside-braces-tolerated",
+      "description": "花括号内空白容忍",
+      "template": "{{ row.name }}",
+      "context": {
+        "row": {
+          "name": "张三",
+          "user": {
+            "city": "杭州"
+          },
+          "score": 98.5
+        },
+        "$index": 3,
+        "orderNo": "A2026-001"
+      },
+      "expect": "张三"
+    },
+    {
+      "name": "fragmentless-marked-string-literal",
+      "description": "不含 {{ 的标记串 = 整串字面（合法无意义）",
+      "template": "纯文本",
+      "context": {
+        "row": {
+          "name": "张三",
+          "user": {
+            "city": "杭州"
+          },
+          "score": 98.5
+        },
+        "$index": 3,
+        "orderNo": "A2026-001"
+      },
+      "expect": "纯文本"
+    },
+    {
+      "name": "unclosed-brace-stays-literal",
+      "description": "未闭合 {{ 剩余全字面（含空白片段起点）",
+      "template": "价格 {{ 未知",
+      "context": {
+        "row": {
+          "name": "张三",
+          "user": {
+            "city": "杭州"
+          },
+          "score": 98.5
+        },
+        "$index": 3,
+        "orderNo": "A2026-001"
+      },
+      "expect": "价格 {{ 未知"
+    },
+    {
+      "name": "unclosed-brace-no-close-stays-literal",
+      "description": "未闭合 {{ 只有开标记时全字面",
+      "template": "价格 {{row.name",
+      "context": {
+        "row": {
+          "name": "张三",
+          "user": {
+            "city": "杭州"
+          },
+          "score": 98.5
+        },
+        "$index": 3,
+        "orderNo": "A2026-001"
+      },
+      "expect": "价格 {{row.name"
+    },
+    {
+      "name": "empty-fragment-syntax-error",
+      "description": "空表达式片段 = 语法错误",
+      "template": "名：{{}}",
+      "context": {
+        "row": {
+          "name": "张三",
+          "user": {
+            "city": "杭州"
+          },
+          "score": 98.5
+        },
+        "$index": 3,
+        "orderNo": "A2026-001"
+      },
+      "expect": {
+        "errorCode": "expression_syntax_error"
+      }
+    },
+    {
+      "name": "unknown-function-fails-fast",
+      "description": "未知函数 fail-fast（不在白名单）",
+      "template": "{{foo(row.x)}}",
+      "context": {
+        "row": {
+          "name": "张三",
+          "user": {
+            "city": "杭州"
+          },
+          "score": 98.5
+        },
+        "$index": 3,
+        "orderNo": "A2026-001"
+      },
+      "expect": {
+        "errorCode": "expression_syntax_error"
+      }
+    },
+    {
+      "name": "unknown-function-case-sensitive",
+      "description": "函数名大小写敏感：DATE 是未知函数",
+      "template": "{{DATE(row.d)}}",
+      "context": {
+        "row": {
+          "d": "2026-10-11 14:30:05",
+          "day": "2026-10-11",
+          "isoT": "2026-10-11T14:30:05",
+          "oob": "2026-02-30",
+          "h24": "2026-10-11 24:00:00",
+          "bad": "2026/10/11",
+          "num": 20261011,
+          "empty": "",
+          "flag": true,
+          "tags": [
+            "a"
+          ]
+        },
+        "$index": 3,
+        "orderNo": "A2026-001"
+      },
+      "expect": {
+        "errorCode": "expression_syntax_error"
+      }
+    },
+    {
+      "name": "unknown-function-non-ascii",
+      "description": "非 ASCII 名按调用分类 → 未知函数",
+      "template": "{{日期(row.d)}}",
+      "context": {
+        "row": {
+          "d": "2026-10-11 14:30:05",
+          "day": "2026-10-11",
+          "isoT": "2026-10-11T14:30:05",
+          "oob": "2026-02-30",
+          "h24": "2026-10-11 24:00:00",
+          "bad": "2026/10/11",
+          "num": 20261011,
+          "empty": "",
+          "flag": true,
+          "tags": [
+            "a"
+          ]
+        },
+        "$index": 3,
+        "orderNo": "A2026-001"
+      },
+      "expect": {
+        "errorCode": "expression_syntax_error"
+      }
+    },
+    {
+      "name": "call-classified-with-space",
+      "description": "token 后可选空白即调用位：foo (bar) 按调用分类",
+      "template": "{{foo (row.x)}}",
+      "context": {
+        "row": {
+          "name": "张三",
+          "user": {
+            "city": "杭州"
+          },
+          "score": 98.5
+        },
+        "$index": 3,
+        "orderNo": "A2026-001"
+      },
+      "expect": {
+        "errorCode": "expression_syntax_error"
+      }
+    },
+    {
+      "name": "path-with-paren-stays-path",
+      "description": "首 token 后无左括号仍按路径（含 ( 键名，字节兼容）",
+      "template": "{{row.a(b}}",
+      "context": {
+        "row": {
+          "name": "张三",
+          "user": {
+            "city": "杭州"
+          },
+          "score": 98.5
+        },
+        "$index": 3,
+        "orderNo": "A2026-001"
+      },
+      "expect": ""
+    },
+    {
+      "name": "bare-name-date-key-is-path",
+      "description": "无 ( 恒为路径：数据集根键叫 date 合法",
+      "template": "{{date}}",
+      "context": {
+        "date": "x"
+      },
+      "expect": "x"
+    },
+    {
+      "name": "call-structure-arg-garbage",
+      "description": "实参后期望 , 或 )：字符串实参后跟另一实参 = 语法错",
+      "template": "{{date(row.d, 'a' 'b')}}",
+      "context": {
+        "row": {
+          "d": "2026-10-11 14:30:05",
+          "day": "2026-10-11",
+          "isoT": "2026-10-11T14:30:05",
+          "oob": "2026-02-30",
+          "h24": "2026-10-11 24:00:00",
+          "bad": "2026/10/11",
+          "num": 20261011,
+          "empty": "",
+          "flag": true,
+          "tags": [
+            "a"
+          ]
+        },
+        "$index": 3,
+        "orderNo": "A2026-001"
+      },
+      "expect": {
+        "errorCode": "expression_syntax_error"
+      }
+    },
+    {
+      "name": "call-structure-unterminated-string",
+      "description": "字符串实参未闭合 = 语法错",
+      "template": "{{date(row.d, 'a)}}",
+      "context": {
+        "row": {
+          "d": "2026-10-11 14:30:05",
+          "day": "2026-10-11",
+          "isoT": "2026-10-11T14:30:05",
+          "oob": "2026-02-30",
+          "h24": "2026-10-11 24:00:00",
+          "bad": "2026/10/11",
+          "num": 20261011,
+          "empty": "",
+          "flag": true,
+          "tags": [
+            "a"
+          ]
+        },
+        "$index": 3,
+        "orderNo": "A2026-001"
+      },
+      "expect": {
+        "errorCode": "expression_syntax_error"
+      }
+    },
+    {
+      "name": "call-structure-trailing-content",
+      "description": "调用收口后有多余内容 = 语法错",
+      "template": "{{date(row.d, 'a')x}}",
+      "context": {
+        "row": {
+          "d": "2026-10-11 14:30:05",
+          "day": "2026-10-11",
+          "isoT": "2026-10-11T14:30:05",
+          "oob": "2026-02-30",
+          "h24": "2026-10-11 24:00:00",
+          "bad": "2026/10/11",
+          "num": 20261011,
+          "empty": "",
+          "flag": true,
+          "tags": [
+            "a"
+          ]
+        },
+        "$index": 3,
+        "orderNo": "A2026-001"
+      },
+      "expect": {
+        "errorCode": "expression_syntax_error"
+      }
+    },
+    {
+      "name": "close-braces-in-string-truncates",
+      "description": "片段内禁 }} 字面：首个 }} 收口截断 → 字符串未闭合",
+      "template": "{{date(row.d, 'a}}b')}}",
+      "context": {
+        "row": {
+          "d": "2026-10-11 14:30:05",
+          "day": "2026-10-11",
+          "isoT": "2026-10-11T14:30:05",
+          "oob": "2026-02-30",
+          "h24": "2026-10-11 24:00:00",
+          "bad": "2026/10/11",
+          "num": 20261011,
+          "empty": "",
+          "flag": true,
+          "tags": [
+            "a"
+          ]
+        },
+        "$index": 3,
+        "orderNo": "A2026-001"
+      },
+      "expect": {
+        "errorCode": "expression_syntax_error"
+      }
+    },
+    {
+      "name": "calls-mix-with-literals-and-paths",
+      "description": "调用片段与字面/路径片段混排",
+      "template": "编号：{{number(row.i, 0)}}（{{date(row.day, 'YYYY年')}}）",
+      "context": {
+        "row": {
+          "v": 1234.5,
+          "i": 1234567,
+          "z": 0,
+          "n": -1234.5,
+          "f": 8.9,
+          "f2": 9.9999,
+          "p": 0.826,
+          "pn": -0.826,
+          "nz": -0.4,
+          "nt": -2.5,
+          "nf": -0.85,
+          "r": 2.675,
+          "rb": 2.675000000001,
+          "q": 0.125,
+          "w": 0.123456789,
+          "s": "1234.5",
+          "s007": "007",
+          "sf": "8.9",
+          "bad": "1e3",
+          "empty": "",
+          "flag": true,
+          "tags": [
+            "a"
+          ],
+          "day": "2026-10-11"
+        },
+        "$index": 3,
+        "orderNo": "A2026-001"
+      },
+      "expect": "编号：1,234,567（2026年）"
+    }
+  ]
+}

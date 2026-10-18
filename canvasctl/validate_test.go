@@ -341,6 +341,260 @@ func TestValidateTable(t *testing.T) {
 	}
 }
 
+// ---- expression-eval 契约形状（工票 03）：按契约分派的用例形状 + dateTokens 转译表 ----
+
+// evalDoc 生成一份最小合法的 expression-eval 语料文档（shell 模块单用例，字符串 expect）。
+func evalDoc(mutate func(m map[string]any)) string {
+	m := map[string]any{
+		"meta": map[string]any{"contract": "expression-eval v2.0"},
+		"cases": []any{
+			map[string]any{
+				"name":        "bare-name-reads-root-key",
+				"description": "裸名只读全局根键",
+				"template":    "{{orderNo}}",
+				"context":     map[string]any{"orderNo": "A2026-001"},
+				"expect":      "A2026-001",
+			},
+		},
+	}
+	if mutate != nil {
+		mutate(m)
+	}
+	b, err := json.Marshal(m)
+	if err != nil {
+		panic(err)
+	}
+	return string(b)
+}
+
+// evalRegistry 含表达式契约全部三个 code 的注册表。
+func evalRegistry() string {
+	return registryJSON(func(m map[string]any) {
+		m["codes"] = []any{"expression_syntax_error", "expression_type_mismatch", "expression_row_outside_loop"}
+	})
+}
+
+// dateTokens 最小合法转译表。
+func dateTokensJSON(mutate func(m map[string]any)) string {
+	m := map[string]any{
+		"sample": "2026-10-11 14:30:05",
+		"rows": []any{
+			map[string]any{"token": "YYYY", "semantics": "四位年，零填充 4 位", "expect": "2026"},
+		},
+	}
+	if mutate != nil {
+		mutate(m)
+	}
+	b, err := json.Marshal(m)
+	if err != nil {
+		panic(err)
+	}
+	return string(b)
+}
+
+func TestValidateEvalTable(t *testing.T) {
+	tests := []struct {
+		name         string
+		files        map[string]string
+		wantErrCount int
+		wantSubstrs  []string
+	}{
+		{
+			name: "绿：eval 最小仓（shell.json 字符串 expect）",
+			files: map[string]string{
+				"spec/error-codes.json":                  evalRegistry(),
+				"corpus/expression-eval/v2.0/shell.json": evalDoc(nil),
+			},
+			wantErrCount: 0,
+		},
+		{
+			name: "绿：expect = {errorCode} 对象（注册表白名单内）",
+			files: map[string]string{
+				"spec/error-codes.json": evalRegistry(),
+				"corpus/expression-eval/v2.0/path.json": evalDoc(func(m map[string]any) {
+					cases := m["cases"].([]any)
+					cases[0].(map[string]any)["expect"] = map[string]any{"errorCode": "expression_type_mismatch"}
+				}),
+			},
+			wantErrCount: 0,
+		},
+		{
+			name: "绿：fn-date.json 携带 dateTokens 转译表",
+			files: map[string]string{
+				"spec/error-codes.json": evalRegistry(),
+				"corpus/expression-eval/v2.0/fn-date.json": evalDoc(func(m map[string]any) {
+					m["dateTokens"] = json.RawMessage(dateTokensJSON(nil))
+				}),
+			},
+			wantErrCount: 0,
+		},
+		{
+			name: "绿：corpus/README.md 语料编写规范放行（文档非语料）",
+			files: map[string]string{
+				"spec/error-codes.json":                  evalRegistry(),
+				"corpus/README.md":                       "# 语料编写规范",
+				"corpus/expression-eval/v2.0/shell.json": evalDoc(nil),
+			},
+			wantErrCount: 0,
+		},
+		{
+			// 用例名唯一作用域 = 契约版本、跨模块文件（scan/eval 同规）。
+			name: "红：eval 用例名跨文件重复",
+			files: map[string]string{
+				"spec/error-codes.json":                  evalRegistry(),
+				"corpus/expression-eval/v2.0/shell.json": evalDoc(nil),
+				"corpus/expression-eval/v2.0/path.json":  evalDoc(nil),
+			},
+			wantErrCount: 1,
+			wantSubstrs:  []string{`用例名重复 "bare-name-reads-root-key"`},
+		},
+		{
+			name: "红：eval 用例缺 context",
+			files: map[string]string{
+				"spec/error-codes.json": evalRegistry(),
+				"corpus/expression-eval/v2.0/shell.json": evalDoc(func(m map[string]any) {
+					cases := m["cases"].([]any)
+					delete(cases[0].(map[string]any), "context")
+				}),
+			},
+			wantErrCount: 1,
+			wantSubstrs:  []string{`缺少键 "context"`},
+		},
+		{
+			// v2 存量载体每例带 group（value|date|number）；模块文件拆分后归属由文件承载，
+			// group 字段退役——严格解码钉死迁移纪律（残留即红）。
+			name: "红：eval 用例残留 group 键（模块拆分后退役）",
+			files: map[string]string{
+				"spec/error-codes.json": evalRegistry(),
+				"corpus/expression-eval/v2.0/shell.json": evalDoc(func(m map[string]any) {
+					cases := m["cases"].([]any)
+					cases[0].(map[string]any)["group"] = "value"
+				}),
+			},
+			wantErrCount: 1,
+			wantSubstrs:  []string{`未知键 "group"`},
+		},
+		{
+			name: "红：context 非对象",
+			files: map[string]string{
+				"spec/error-codes.json": evalRegistry(),
+				"corpus/expression-eval/v2.0/shell.json": evalDoc(func(m map[string]any) {
+					cases := m["cases"].([]any)
+					cases[0].(map[string]any)["context"] = []any{"row"}
+				}),
+			},
+			wantErrCount: 1,
+			wantSubstrs:  []string{`"context" 应为对象`},
+		},
+		{
+			name: "红：expect 类型坏（数字）",
+			files: map[string]string{
+				"spec/error-codes.json": evalRegistry(),
+				"corpus/expression-eval/v2.0/shell.json": evalDoc(func(m map[string]any) {
+					cases := m["cases"].([]any)
+					cases[0].(map[string]any)["expect"] = 42
+				}),
+			},
+			wantErrCount: 1,
+			wantSubstrs:  []string{`expect 应为字符串或 {errorCode} 对象`},
+		},
+		{
+			name: "红：expect 对象多余键",
+			files: map[string]string{
+				"spec/error-codes.json": evalRegistry(),
+				"corpus/expression-eval/v2.0/shell.json": evalDoc(func(m map[string]any) {
+					cases := m["cases"].([]any)
+					cases[0].(map[string]any)["expect"] = map[string]any{"errorCode": "expression_syntax_error", "msg": "x"}
+				}),
+			},
+			wantErrCount: 1,
+			wantSubstrs:  []string{`未知键 "msg"`},
+		},
+		{
+			name: "红：errorCode 未注册",
+			files: map[string]string{
+				"spec/error-codes.json": evalRegistry(),
+				"corpus/expression-eval/v2.0/shell.json": evalDoc(func(m map[string]any) {
+					cases := m["cases"].([]any)
+					cases[0].(map[string]any)["expect"] = map[string]any{"errorCode": "expression_unknown_error"}
+				}),
+			},
+			wantErrCount: 1,
+			wantSubstrs:  []string{`错误 code "expression_unknown_error" 不在注册表`},
+		},
+		{
+			name: "红：dateTokens 落在非 fn-date 模块文件",
+			files: map[string]string{
+				"spec/error-codes.json": evalRegistry(),
+				"corpus/expression-eval/v2.0/shell.json": evalDoc(func(m map[string]any) {
+					m["dateTokens"] = json.RawMessage(dateTokensJSON(nil))
+				}),
+			},
+			wantErrCount: 1,
+			wantSubstrs:  []string{`未知键 "dateTokens"`},
+		},
+		{
+			name: "红：dateTokens 行缺 semantics",
+			files: map[string]string{
+				"spec/error-codes.json": evalRegistry(),
+				"corpus/expression-eval/v2.0/fn-date.json": evalDoc(func(m map[string]any) {
+					m["dateTokens"] = json.RawMessage(dateTokensJSON(func(m map[string]any) {
+						rows := m["rows"].([]any)
+						delete(rows[0].(map[string]any), "semantics")
+					}))
+				}),
+			},
+			wantErrCount: 1,
+			wantSubstrs:  []string{`缺少键 "semantics"`},
+		},
+		{
+			name: "红：dateTokens 行多余键",
+			files: map[string]string{
+				"spec/error-codes.json": evalRegistry(),
+				"corpus/expression-eval/v2.0/fn-date.json": evalDoc(func(m map[string]any) {
+					m["dateTokens"] = json.RawMessage(dateTokensJSON(func(m map[string]any) {
+						rows := m["rows"].([]any)
+						rows[0].(map[string]any)["note"] = "x"
+					}))
+				}),
+			},
+			wantErrCount: 1,
+			wantSubstrs:  []string{`未知键 "note"`},
+		},
+		{
+			name: "红：dateTokens 缺 sample",
+			files: map[string]string{
+				"spec/error-codes.json": evalRegistry(),
+				"corpus/expression-eval/v2.0/fn-date.json": evalDoc(func(m map[string]any) {
+					m["dateTokens"] = json.RawMessage(dateTokensJSON(func(m map[string]any) {
+						delete(m, "sample")
+					}))
+				}),
+			},
+			wantErrCount: 1,
+			wantSubstrs:  []string{`缺少键 "sample"`},
+		},
+		{
+			name: "红：未知契约目录（validate 无形状定义）",
+			files: map[string]string{
+				"spec/error-codes.json": evalRegistry(),
+				"corpus/expression-foo/v1.0/x.json": evalDoc(func(m map[string]any) {
+					m["meta"] = map[string]any{"contract": "expression-foo v1.0"}
+				}),
+			},
+			wantErrCount: 1,
+			wantSubstrs:  []string{`未知契约 "expression-foo"`},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			root := writeTree(t, tt.files)
+			res := Validate(root)
+			assertResult(t, res, tt.wantErrCount, tt.wantSubstrs)
+		})
+	}
+}
+
 // 绿用例顺带钉住计数面（CI 摘要的数字来源）。
 func TestValidateCounts(t *testing.T) {
 	root := writeTree(t, baseTree(scanDoc(nil)))

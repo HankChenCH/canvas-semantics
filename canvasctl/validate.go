@@ -78,6 +78,10 @@ func Validate(root string) Result {
 		if strings.HasPrefix(name, ".") {
 			continue
 		}
+		if name == "README.md" && !ce.IsDir() {
+			// 语料编写规范文档（非语料），与点条目同待遇。
+			continue
+		}
 		if name == "proposals" && ce.IsDir() {
 			// 提案期用例区（GOVERNANCE §7）：volatile、不占 contract 版本；
 			// validate 暂不校验，「提案期用例反链提案文档」等治理 lint 由后续工票接入。
@@ -161,7 +165,7 @@ func validateVersionDir(corpusDir, contractID, version string, reg *codeRegistry
 			res.errf("%s：读取失败：%v", fileRel, err)
 			continue
 		}
-		validateModuleFile(fileRel, data, contractID, version, reg, seenCaseNames, res)
+		validateModuleFile(fileRel, data, contractID, version, fname, reg, seenCaseNames, res)
 	}
 }
 
@@ -173,13 +177,48 @@ type corpusMeta struct {
 	notes    []string
 }
 
-func validateModuleFile(relPath string, data []byte, contractID, version string, reg *codeRegistry, seenCaseNames map[string]string, res *Result) {
+// contractSchema 契约级语料形状：用例顶层键集与用例校验器按契约分派
+// （模块注册表现有五契约、两种用例形状；SUPPORT-SURFACE.md §2）。
+type contractSchema struct {
+	caseKeys     []string
+	validateCase func(relPath string, idx int, raw json.RawMessage, reg *codeRegistry, seenCaseNames map[string]string, res *Result)
+	// moduleExtraKeys 模块文件名 → 文档级额外允许键（严格解码，未列模块出现即红）。
+	moduleExtraKeys map[string][]string
+}
+
+// 两契约的用例顶层键集（严格解码，未知字段即红）。
+var (
+	scanCaseKeys = []string{"name", "description", "template", "expect"}
+	evalCaseKeys = []string{"name", "description", "template", "context", "expect"}
+)
+
+var contractSchemas = map[string]*contractSchema{
+	"expression-scan": {
+		caseKeys:     scanCaseKeys,
+		validateCase: validateScanCase,
+	},
+	"expression-eval": {
+		caseKeys:     evalCaseKeys,
+		validateCase: validateEvalCase,
+		// dateTokens 转译表随语料发布（GOVERNANCE §3.3），钉在日期模块文件一处。
+		moduleExtraKeys: map[string][]string{"fn-date.json": {"dateTokens"}},
+	},
+}
+
+func validateModuleFile(relPath string, data []byte, contractID, version, fname string, reg *codeRegistry, seenCaseNames map[string]string, res *Result) {
+	schema, ok := contractSchemas[contractID]
+	if !ok {
+		res.errf("%s：未知契约 %q（validate 无其形状定义；新契约走提案转正 + 注册表登记后接入）", relPath, contractID)
+		return
+	}
+
 	doc, err := decodeObject(data, relPath)
 	if err != nil {
 		res.err(err)
 		return
 	}
-	if err := checkKeys(doc, []string{"meta", "cases"}, nil, relPath); err != nil {
+	docKeys := append([]string{"meta", "cases"}, schema.moduleExtraKeys[fname]...)
+	if err := checkKeys(doc, docKeys, nil, relPath); err != nil {
 		res.err(err)
 		return
 	}
@@ -194,6 +233,12 @@ func validateModuleFile(relPath string, data []byte, contractID, version string,
 		res.errf("%s：meta.contract %q 与目录名不一致（双写互检，应为 %q）", relPath, meta.contract, want)
 	}
 
+	for _, extra := range schema.moduleExtraKeys[fname] {
+		if raw, ok := doc[extra]; ok {
+			validateDateTokens(raw, relPath+"："+extra, res)
+		}
+	}
+
 	casesRaw, err := decodeArrayField(doc, "cases", relPath)
 	if err != nil {
 		res.err(err)
@@ -204,7 +249,7 @@ func validateModuleFile(relPath string, data []byte, contractID, version string,
 		return
 	}
 	for i, caseRaw := range casesRaw {
-		validateCase(relPath, i, caseRaw, reg, seenCaseNames, res)
+		schema.validateCase(relPath, i, caseRaw, reg, seenCaseNames, res)
 	}
 }
 
@@ -238,21 +283,22 @@ func decodeMeta(raw json.RawMessage, relPath string) (corpusMeta, error) {
 	return meta, nil
 }
 
-func validateCase(relPath string, idx int, raw json.RawMessage, reg *codeRegistry, seenCaseNames map[string]string, res *Result) {
+// caseIdentity 用例公共前置：解码对象、取非空名、钉用例名唯一（作用域 = 契约版本，跨模块文件）。
+// 返回 nil 对象时错误已记，调用方直接返回。
+func caseIdentity(relPath string, idx int, raw json.RawMessage, seenCaseNames map[string]string, res *Result) (map[string]json.RawMessage, string) {
 	base := fmt.Sprintf("%s：用例 cases[%d]", relPath, idx)
 	m, err := decodeObject(raw, base)
 	if err != nil {
 		res.err(err)
-		return
+		return nil, ""
 	}
 	name, err := decodeStringField(m, "name", base)
 	if err != nil {
 		res.err(err)
-		return
+		return nil, ""
 	}
 	ctx := fmt.Sprintf("%s（%s）", base, name)
 
-	// 用例名唯一 + 非空（GOVERNANCE §8；唯一作用域 = 契约版本，跨模块文件）。
 	if name == "" {
 		res.errf("%s：用例名不可为空", ctx)
 	} else if prev, dup := seenCaseNames[name]; dup {
@@ -261,7 +307,31 @@ func validateCase(relPath string, idx int, raw json.RawMessage, reg *codeRegistr
 		seenCaseNames[name] = ctx
 	}
 
-	if err := checkKeys(m, []string{"name", "description", "template", "expect"}, nil, ctx); err != nil {
+	return m, ctx
+}
+
+// checkErrorCode 错误 code 白名单（GOVERNANCE §2.2/§3.4）：只认注册表 active 区；
+// reserved 区 = 已退役，永不复用。注册表加载失败时跳过（已单独报错）。
+func checkErrorCode(ctx, code string, reg *codeRegistry, res *Result) {
+	if reg == nil {
+		return
+	}
+	switch {
+	case reg.reserved[code]:
+		res.errf("%s：错误 code %q 已退役保留，不可复用（GOVERNANCE §2.2）", ctx, code)
+	case !reg.codes[code]:
+		res.errf("%s：错误 code %q 不在注册表（code 扩充走提案通道，GOVERNANCE §3.4）", ctx, code)
+	}
+}
+
+// validateScanCase expression-scan 用例形状：expect.parts 逐 kind 切分产物。
+func validateScanCase(relPath string, idx int, raw json.RawMessage, reg *codeRegistry, seenCaseNames map[string]string, res *Result) {
+	m, ctx := caseIdentity(relPath, idx, raw, seenCaseNames, res)
+	if m == nil {
+		return
+	}
+
+	if err := checkKeys(m, scanCaseKeys, nil, ctx); err != nil {
 		res.err(err)
 		return
 	}
@@ -292,6 +362,111 @@ func validateCase(relPath string, idx int, raw json.RawMessage, reg *codeRegistr
 		validatePart(ctx, j, partRaw, reg, res)
 	}
 	res.Cases++
+}
+
+// validateEvalCase expression-eval 用例形状：context 求值上下文 + expect 字符串或 {errorCode}。
+func validateEvalCase(relPath string, idx int, raw json.RawMessage, reg *codeRegistry, seenCaseNames map[string]string, res *Result) {
+	m, ctx := caseIdentity(relPath, idx, raw, seenCaseNames, res)
+	if m == nil {
+		return
+	}
+
+	if err := checkKeys(m, evalCaseKeys, nil, ctx); err != nil {
+		res.err(err)
+		return
+	}
+	if _, err := decodeStringField(m, "description", ctx); err != nil {
+		res.err(err)
+		return
+	}
+	if _, err := decodeStringField(m, "template", ctx); err != nil {
+		res.err(err)
+		return
+	}
+	// context 形状 = 任意 JSON 对象（行数据/根键值不作约束，值域由用例自钉）。
+	var ctxObj map[string]json.RawMessage
+	if err := json.Unmarshal(m["context"], &ctxObj); err != nil {
+		res.errf("%s：键 %q 应为对象", ctx, "context")
+		return
+	}
+
+	expectRaw, ok := m["expect"]
+	if !ok {
+		res.errf("%s：缺少键 %q", ctx, "expect")
+		return
+	}
+	var strExpect string
+	if err := json.Unmarshal(expectRaw, &strExpect); err == nil {
+		res.Cases++
+		return
+	}
+	expectM, err := decodeObject(expectRaw, ctx+"：expect")
+	if err != nil {
+		res.errf("%s：expect 应为字符串或 {errorCode} 对象", ctx)
+		return
+	}
+	if err := checkKeys(expectM, []string{"errorCode"}, nil, ctx+"：expect"); err != nil {
+		res.err(err)
+		return
+	}
+	code, err := decodeStringField(expectM, "errorCode", ctx+"：expect")
+	if err != nil {
+		res.err(err)
+		return
+	}
+	checkErrorCode(ctx+"：expect", code, reg, res)
+	res.Cases++
+}
+
+// validateDateTokens dateTokens 转译表（仅 expression-eval 的 fn-date.json）：moment 风格
+// token 逐行自含语义，sample 钉死样例时刻（GOVERNANCE §3.3，权威数据随语料发布）。
+func validateDateTokens(raw json.RawMessage, ctx string, res *Result) {
+	m, err := decodeObject(raw, ctx)
+	if err != nil {
+		res.err(err)
+		return
+	}
+	if err := checkKeys(m, []string{"sample", "rows"}, nil, ctx); err != nil {
+		res.err(err)
+		return
+	}
+	if _, err := decodeStringField(m, "sample", ctx); err != nil {
+		res.err(err)
+		return
+	}
+	rowsRaw, err := decodeArrayField(m, "rows", ctx)
+	if err != nil {
+		res.err(err)
+		return
+	}
+	if len(rowsRaw) == 0 {
+		res.errf("%s：rows 不可为空", ctx)
+		return
+	}
+	for i, rowRaw := range rowsRaw {
+		rowCtx := fmt.Sprintf("%s：rows[%d]", ctx, i)
+		rowM, err := decodeObject(rowRaw, rowCtx)
+		if err != nil {
+			res.err(err)
+			continue
+		}
+		if err := checkKeys(rowM, []string{"token", "semantics", "expect"}, nil, rowCtx); err != nil {
+			res.err(err)
+			continue
+		}
+		if _, err := decodeStringField(rowM, "token", rowCtx); err != nil {
+			res.err(err)
+			continue
+		}
+		if _, err := decodeStringField(rowM, "semantics", rowCtx); err != nil {
+			res.err(err)
+			continue
+		}
+		if _, err := decodeStringField(rowM, "expect", rowCtx); err != nil {
+			res.err(err)
+			continue
+		}
+	}
 }
 
 // validatePart 逐 kind 钉死 part 键集（与 PHP 侧 scanFixtureExportShape 的逐 kind 键集断言同构）：
@@ -349,15 +524,8 @@ func validatePart(caseCtx string, idx int, raw json.RawMessage, reg *codeRegistr
 			res.err(err)
 			return
 		}
-		// 错误 code 白名单（GOVERNANCE §2.2/§3.4）：只认注册表 active 区；
-		// reserved 区 = 已退役，永不复用。注册表加载失败时跳过（已单独报错）。
-		if code != nil && reg != nil {
-			switch {
-			case reg.reserved[*code]:
-				res.errf("%s：错误 code %q 已退役保留，不可复用（GOVERNANCE §2.2）", ctx, *code)
-			case !reg.codes[*code]:
-				res.errf("%s：错误 code %q 不在注册表（code 扩充走提案通道，GOVERNANCE §3.4）", ctx, *code)
-			}
+		if code != nil {
+			checkErrorCode(ctx, *code, reg, res)
 		}
 	}
 }

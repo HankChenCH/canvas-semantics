@@ -3,3 +3,6 @@
 
 # macOS
 .DS_Store
+
+# go build 落在源码目录内的裸产物（规范产出 = go build -o bin/ ./canvasctl）
+/canvasctl/canvasctl

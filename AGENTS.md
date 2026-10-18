@@ -8,9 +8,9 @@
 
 - **治理**（已就位）：`GOVERNANCE.md`（MUST/MUST NOT/MAY、版本政策、提案生命周期、fail-fast 切分、自定义函数终态）、`SUPPORT-SURFACE.md`（支持面声明格式 + 模块注册表）。
 - **提案**（已就位）：`proposals/`（README 生命周期 + `0000-template.md`；语义演进的唯一通道）。
-- **薄规格正文** `spec/`（占位：正文随工票 03/04 落笔；`spec/error-codes.json` 是错误 code 注册表，validate 白名单数据源）。
-- **语料** `corpus/<契约>/<v主.次>/<模块文件>.json`（扫描契约 v1.0 已入仓；其余四契约随工票 03/04 迁入）。
-- **Go 工具** `canvasctl/`：`validate` 子命令已就位（严格 typed 解码 + 双写互检 + code 白名单 + 用例名唯一）；lint/diff/release 随后续工票。
+- **薄规格正文** `spec/`：`expression.md` 已落笔（工票 03：外壳/路径/fn-date/fn-number 冻结面 + 优先级裁决 + 显式不保证）；`pipeline.md` 随工票 04 落笔；`spec/error-codes.json` 是错误 code 注册表（validate 白名单数据源，现登记表达式三 code）。
+- **语料** `corpus/<契约>/<v主.次>/<模块文件>.json`（编写规范见 `corpus/README.md`）：`expression-scan v1.0` 与 `expression-eval v2.0`（shell/path/fn-date/fn-number 四模块，工票 02/03）已入仓；其余三契约随工票 04 迁入。
+- **Go 工具** `canvasctl/`：`validate` 子命令已就位（严格 typed 解码 + 按契约分派用例形状 + 双写互检 + code 白名单 + 用例名唯一 + dateTokens 严格解码）；lint/diff/release 随后续工票。
 - 消费端声明文件在各实现仓（`<repo>/support-surface.json`），本仓只定义格式与注册表。
 
 ## 红线（改动前先读 `GOVERNANCE.md` 全文）

@@ -1,7 +1,9 @@
 {
   "registry": "canvas-semantics/error-codes v1",
   "codes": [
-    "expression_syntax_error"
+    "expression_syntax_error",
+    "expression_type_mismatch",
+    "expression_row_outside_loop"
   ],
   "reserved": []
 }

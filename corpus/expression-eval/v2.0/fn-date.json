@@ -1,0 +1,915 @@
+{
+  "meta": {
+    "contract": "expression-eval v2.0",
+    "notes": [
+      "迁自 go-canvas/hydrate/testdata/expression-eval.json（PHP 权威导出脚本 php-canvas-next/scripts/export-hydrate-fixtures.php 的导出载体，2026-10-18，工票 03），自此手维护为本仓语义权威，用例逐字段原样搬运；",
+      "模块拆分：原载体单文件且每例带 group（value|date|number），拆分后归属由模块文件承载、group 字段退役——date→fn-date、number→fn-number，value 32 例按语义面拆归 shell（17：切分/片段分类/调用文法）与 path（15：取值/上下文/保留名）；",
+      "存量 meta.contract v2 归一为 v2.0、generator 字段退役（GOVERNANCE §4/§9）；原 meta.notes 中的语义注记（分轴哲学、fail-fast 错误分类、求值上下文形状、极端浮点不保证等）升格薄规格 spec/expression.md；",
+      "迁移期间消费仓零感知：go-canvas 仍读旧位置，消费翻转随工票 06/07。",
+      "本文件对应支持面注册表模块 fn-date（日期函数与 dateTokens 转译，SUPPORT-SURFACE.md §2）；dateTokens 转译表随本文件发布（GOVERNANCE §3.3），权威正文 spec/expression.md。"
+    ]
+  },
+  "cases": [
+    {
+      "name": "date-default-format",
+      "description": "单参缺省格式 = YYYY-MM-DD（等价预设 date）",
+      "template": "{{date(row.day)}}",
+      "context": {
+        "row": {
+          "d": "2026-10-11 14:30:05",
+          "day": "2026-10-11",
+          "isoT": "2026-10-11T14:30:05",
+          "oob": "2026-02-30",
+          "h24": "2026-10-11 24:00:00",
+          "bad": "2026/10/11",
+          "num": 20261011,
+          "empty": "",
+          "flag": true,
+          "tags": [
+            "a"
+          ]
+        },
+        "$index": 3,
+        "orderNo": "A2026-001"
+      },
+      "expect": "2026-10-11"
+    },
+    {
+      "name": "date-datetime-sample-default",
+      "description": "含时间输入单参调用 → 缺省格式取日期部分",
+      "template": "{{date(row.d)}}",
+      "context": {
+        "row": {
+          "d": "2026-10-11 14:30:05",
+          "day": "2026-10-11",
+          "isoT": "2026-10-11T14:30:05",
+          "oob": "2026-02-30",
+          "h24": "2026-10-11 24:00:00",
+          "bad": "2026/10/11",
+          "num": 20261011,
+          "empty": "",
+          "flag": true,
+          "tags": [
+            "a"
+          ]
+        },
+        "$index": 3,
+        "orderNo": "A2026-001"
+      },
+      "expect": "2026-10-11"
+    },
+    {
+      "name": "date-preset-date",
+      "description": "预设 date 展开与缺省等价",
+      "template": "{{date(row.d, 'date')}}",
+      "context": {
+        "row": {
+          "d": "2026-10-11 14:30:05",
+          "day": "2026-10-11",
+          "isoT": "2026-10-11T14:30:05",
+          "oob": "2026-02-30",
+          "h24": "2026-10-11 24:00:00",
+          "bad": "2026/10/11",
+          "num": 20261011,
+          "empty": "",
+          "flag": true,
+          "tags": [
+            "a"
+          ]
+        },
+        "$index": 3,
+        "orderNo": "A2026-001"
+      },
+      "expect": "2026-10-11"
+    },
+    {
+      "name": "date-preset-datetime",
+      "description": "预设 datetime → YYYY-MM-DD HH:mm:ss",
+      "template": "{{date(row.d, 'datetime')}}",
+      "context": {
+        "row": {
+          "d": "2026-10-11 14:30:05",
+          "day": "2026-10-11",
+          "isoT": "2026-10-11T14:30:05",
+          "oob": "2026-02-30",
+          "h24": "2026-10-11 24:00:00",
+          "bad": "2026/10/11",
+          "num": 20261011,
+          "empty": "",
+          "flag": true,
+          "tags": [
+            "a"
+          ]
+        },
+        "$index": 3,
+        "orderNo": "A2026-001"
+      },
+      "expect": "2026-10-11 14:30:05"
+    },
+    {
+      "name": "date-input-iso-t-form",
+      "description": "ISO T 形态可解析（仅大写 T）",
+      "template": "{{date(row.isoT, 'datetime')}}",
+      "context": {
+        "row": {
+          "d": "2026-10-11 14:30:05",
+          "day": "2026-10-11",
+          "isoT": "2026-10-11T14:30:05",
+          "oob": "2026-02-30",
+          "h24": "2026-10-11 24:00:00",
+          "bad": "2026/10/11",
+          "num": 20261011,
+          "empty": "",
+          "flag": true,
+          "tags": [
+            "a"
+          ]
+        },
+        "$index": 3,
+        "orderNo": "A2026-001"
+      },
+      "expect": "2026-10-11 14:30:05"
+    },
+    {
+      "name": "date-preset-whole-match",
+      "description": "预设整体等值才命中：datetime X 按 token 串解析 → X 白名单外报错",
+      "template": "{{date(row.d, 'datetime X')}}",
+      "context": {
+        "row": {
+          "d": "2026-10-11 14:30:05",
+          "day": "2026-10-11",
+          "isoT": "2026-10-11T14:30:05",
+          "oob": "2026-02-30",
+          "h24": "2026-10-11 24:00:00",
+          "bad": "2026/10/11",
+          "num": 20261011,
+          "empty": "",
+          "flag": true,
+          "tags": [
+            "a"
+          ]
+        },
+        "$index": 3,
+        "orderNo": "A2026-001"
+      },
+      "expect": {
+        "errorCode": "expression_syntax_error"
+      }
+    },
+    {
+      "name": "date-escape-preset-name",
+      "description": "要输出字面 date 用转义段 [date]",
+      "template": "{{date(row.d, '[date]')}}",
+      "context": {
+        "row": {
+          "d": "2026-10-11 14:30:05",
+          "day": "2026-10-11",
+          "isoT": "2026-10-11T14:30:05",
+          "oob": "2026-02-30",
+          "h24": "2026-10-11 24:00:00",
+          "bad": "2026/10/11",
+          "num": 20261011,
+          "empty": "",
+          "flag": true,
+          "tags": [
+            "a"
+          ]
+        },
+        "$index": 3,
+        "orderNo": "A2026-001"
+      },
+      "expect": "date"
+    },
+    {
+      "name": "date-chinese-literal-mix",
+      "description": "非 ASCII 字母字面直通：中文格式写即所得",
+      "template": "{{date(row.d, 'YYYY年MM月DD日')}}",
+      "context": {
+        "row": {
+          "d": "2026-10-11 14:30:05",
+          "day": "2026-10-11",
+          "isoT": "2026-10-11T14:30:05",
+          "oob": "2026-02-30",
+          "h24": "2026-10-11 24:00:00",
+          "bad": "2026/10/11",
+          "num": 20261011,
+          "empty": "",
+          "flag": true,
+          "tags": [
+            "a"
+          ]
+        },
+        "$index": 3,
+        "orderNo": "A2026-001"
+      },
+      "expect": "2026年10月11日"
+    },
+    {
+      "name": "date-weekday-tokens",
+      "description": "周几中文输出（dddd 全称 / ddd 简称）",
+      "template": "{{date(row.d, 'dddd ddd')}}",
+      "context": {
+        "row": {
+          "d": "2026-10-11 14:30:05",
+          "day": "2026-10-11",
+          "isoT": "2026-10-11T14:30:05",
+          "oob": "2026-02-30",
+          "h24": "2026-10-11 24:00:00",
+          "bad": "2026/10/11",
+          "num": 20261011,
+          "empty": "",
+          "flag": true,
+          "tags": [
+            "a"
+          ]
+        },
+        "$index": 3,
+        "orderNo": "A2026-001"
+      },
+      "expect": "星期日 周日"
+    },
+    {
+      "name": "date-full-combo",
+      "description": "全 token 组合 + 中文字面混排",
+      "template": "{{date(row.d, 'YYYY-MM-DD HH:mm:ss dddd')}}",
+      "context": {
+        "row": {
+          "d": "2026-10-11 14:30:05",
+          "day": "2026-10-11",
+          "isoT": "2026-10-11T14:30:05",
+          "oob": "2026-02-30",
+          "h24": "2026-10-11 24:00:00",
+          "bad": "2026/10/11",
+          "num": 20261011,
+          "empty": "",
+          "flag": true,
+          "tags": [
+            "a"
+          ]
+        },
+        "$index": 3,
+        "orderNo": "A2026-001"
+      },
+      "expect": "2026-10-11 14:30:05 星期日"
+    },
+    {
+      "name": "date-token-case-sensitive",
+      "description": "token 大小写敏感：MM 月 ≠ mm 分",
+      "template": "{{date(row.d, 'MM月mm分')}}",
+      "context": {
+        "row": {
+          "d": "2026-10-11 14:30:05",
+          "day": "2026-10-11",
+          "isoT": "2026-10-11T14:30:05",
+          "oob": "2026-02-30",
+          "h24": "2026-10-11 24:00:00",
+          "bad": "2026/10/11",
+          "num": 20261011,
+          "empty": "",
+          "flag": true,
+          "tags": [
+            "a"
+          ]
+        },
+        "$index": 3,
+        "orderNo": "A2026-001"
+      },
+      "expect": "10月30分"
+    },
+    {
+      "name": "date-escape-literal-segments",
+      "description": "方括号转义段内容字面直通（token 不渲染）",
+      "template": "{{date(row.d, '[YYYY]年[MM]月')}}",
+      "context": {
+        "row": {
+          "d": "2026-10-11 14:30:05",
+          "day": "2026-10-11",
+          "isoT": "2026-10-11T14:30:05",
+          "oob": "2026-02-30",
+          "h24": "2026-10-11 24:00:00",
+          "bad": "2026/10/11",
+          "num": 20261011,
+          "empty": "",
+          "flag": true,
+          "tags": [
+            "a"
+          ]
+        },
+        "$index": 3,
+        "orderNo": "A2026-001"
+      },
+      "expect": "YYYY年MM月"
+    },
+    {
+      "name": "date-escape-two-layer-orthogonal",
+      "description": "单引号翻倍转义与方括号转义两层正交",
+      "template": "{{date(row.d, '[it''s]')}}",
+      "context": {
+        "row": {
+          "d": "2026-10-11 14:30:05",
+          "day": "2026-10-11",
+          "isoT": "2026-10-11T14:30:05",
+          "oob": "2026-02-30",
+          "h24": "2026-10-11 24:00:00",
+          "bad": "2026/10/11",
+          "num": 20261011,
+          "empty": "",
+          "flag": true,
+          "tags": [
+            "a"
+          ]
+        },
+        "$index": 3,
+        "orderNo": "A2026-001"
+      },
+      "expect": "it's"
+    },
+    {
+      "name": "date-escape-unclosed-bracket",
+      "description": "未配对 [ 按普通字符字面输出（含 [ 自身）",
+      "template": "{{date(row.d, '第[')}}",
+      "context": {
+        "row": {
+          "d": "2026-10-11 14:30:05",
+          "day": "2026-10-11",
+          "isoT": "2026-10-11T14:30:05",
+          "oob": "2026-02-30",
+          "h24": "2026-10-11 24:00:00",
+          "bad": "2026/10/11",
+          "num": 20261011,
+          "empty": "",
+          "flag": true,
+          "tags": [
+            "a"
+          ]
+        },
+        "$index": 3,
+        "orderNo": "A2026-001"
+      },
+      "expect": "第["
+    },
+    {
+      "name": "date-escape-orphan-bracket",
+      "description": "孤立 ] 字面输出",
+      "template": "{{date(row.d, ']]')}}",
+      "context": {
+        "row": {
+          "d": "2026-10-11 14:30:05",
+          "day": "2026-10-11",
+          "isoT": "2026-10-11T14:30:05",
+          "oob": "2026-02-30",
+          "h24": "2026-10-11 24:00:00",
+          "bad": "2026/10/11",
+          "num": 20261011,
+          "empty": "",
+          "flag": true,
+          "tags": [
+            "a"
+          ]
+        },
+        "$index": 3,
+        "orderNo": "A2026-001"
+      },
+      "expect": "]]"
+    },
+    {
+      "name": "date-escape-nested-bracket",
+      "description": "转义段至首个 ] 止，段内无嵌套无再次转义",
+      "template": "{{date(row.d, '[a[b]')}}",
+      "context": {
+        "row": {
+          "d": "2026-10-11 14:30:05",
+          "day": "2026-10-11",
+          "isoT": "2026-10-11T14:30:05",
+          "oob": "2026-02-30",
+          "h24": "2026-10-11 24:00:00",
+          "bad": "2026/10/11",
+          "num": 20261011,
+          "empty": "",
+          "flag": true,
+          "tags": [
+            "a"
+          ]
+        },
+        "$index": 3,
+        "orderNo": "A2026-001"
+      },
+      "expect": "a[b"
+    },
+    {
+      "name": "date-escape-then-whitelist",
+      "description": "未配对 [ 之后字符仍走 token 白名单 → fail-fast",
+      "template": "{{date(row.d, '[today')}}",
+      "context": {
+        "row": {
+          "d": "2026-10-11 14:30:05",
+          "day": "2026-10-11",
+          "isoT": "2026-10-11T14:30:05",
+          "oob": "2026-02-30",
+          "h24": "2026-10-11 24:00:00",
+          "bad": "2026/10/11",
+          "num": 20261011,
+          "empty": "",
+          "flag": true,
+          "tags": [
+            "a"
+          ]
+        },
+        "$index": 3,
+        "orderNo": "A2026-001"
+      },
+      "expect": {
+        "errorCode": "expression_syntax_error"
+      }
+    },
+    {
+      "name": "date-empty-format",
+      "description": "空格式串 = 零 token 零输出",
+      "template": "{{date(row.d, '')}}",
+      "context": {
+        "row": {
+          "d": "2026-10-11 14:30:05",
+          "day": "2026-10-11",
+          "isoT": "2026-10-11T14:30:05",
+          "oob": "2026-02-30",
+          "h24": "2026-10-11 24:00:00",
+          "bad": "2026/10/11",
+          "num": 20261011,
+          "empty": "",
+          "flag": true,
+          "tags": [
+            "a"
+          ]
+        },
+        "$index": 3,
+        "orderNo": "A2026-001"
+      },
+      "expect": ""
+    },
+    {
+      "name": "date-unknown-token",
+      "description": "白名单外 ASCII 字母 fail-fast（数据无关的确定性错误）",
+      "template": "{{date(row.d, 'YYYYQ')}}",
+      "context": {
+        "row": {
+          "d": "2026-10-11 14:30:05",
+          "day": "2026-10-11",
+          "isoT": "2026-10-11T14:30:05",
+          "oob": "2026-02-30",
+          "h24": "2026-10-11 24:00:00",
+          "bad": "2026/10/11",
+          "num": 20261011,
+          "empty": "",
+          "flag": true,
+          "tags": [
+            "a"
+          ]
+        },
+        "$index": 3,
+        "orderNo": "A2026-001"
+      },
+      "expect": {
+        "errorCode": "expression_syntax_error"
+      }
+    },
+    {
+      "name": "date-lowercase-token",
+      "description": "token 大小写敏感：小写 yyyy 无对应 token",
+      "template": "{{date(row.d, 'yyyy')}}",
+      "context": {
+        "row": {
+          "d": "2026-10-11 14:30:05",
+          "day": "2026-10-11",
+          "isoT": "2026-10-11T14:30:05",
+          "oob": "2026-02-30",
+          "h24": "2026-10-11 24:00:00",
+          "bad": "2026/10/11",
+          "num": 20261011,
+          "empty": "",
+          "flag": true,
+          "tags": [
+            "a"
+          ]
+        },
+        "$index": 3,
+        "orderNo": "A2026-001"
+      },
+      "expect": {
+        "errorCode": "expression_syntax_error"
+      }
+    },
+    {
+      "name": "date-unparseable-passthrough",
+      "description": "非空字符串不可解析（斜杠格式）= 原文直通",
+      "template": "{{date(row.bad)}}",
+      "context": {
+        "row": {
+          "d": "2026-10-11 14:30:05",
+          "day": "2026-10-11",
+          "isoT": "2026-10-11T14:30:05",
+          "oob": "2026-02-30",
+          "h24": "2026-10-11 24:00:00",
+          "bad": "2026/10/11",
+          "num": 20261011,
+          "empty": "",
+          "flag": true,
+          "tags": [
+            "a"
+          ]
+        },
+        "$index": 3,
+        "orderNo": "A2026-001"
+      },
+      "expect": "2026/10/11"
+    },
+    {
+      "name": "date-numeric-passthrough",
+      "description": "数值输入 = 字符串化后原文直通（时间戳不收）",
+      "template": "{{date(row.num)}}",
+      "context": {
+        "row": {
+          "d": "2026-10-11 14:30:05",
+          "day": "2026-10-11",
+          "isoT": "2026-10-11T14:30:05",
+          "oob": "2026-02-30",
+          "h24": "2026-10-11 24:00:00",
+          "bad": "2026/10/11",
+          "num": 20261011,
+          "empty": "",
+          "flag": true,
+          "tags": [
+            "a"
+          ]
+        },
+        "$index": 3,
+        "orderNo": "A2026-001"
+      },
+      "expect": "20261011"
+    },
+    {
+      "name": "date-overflow-day-passthrough",
+      "description": "越界日期 2026-02-30 不可解析 = 原文直通",
+      "template": "{{date(row.oob)}}",
+      "context": {
+        "row": {
+          "d": "2026-10-11 14:30:05",
+          "day": "2026-10-11",
+          "isoT": "2026-10-11T14:30:05",
+          "oob": "2026-02-30",
+          "h24": "2026-10-11 24:00:00",
+          "bad": "2026/10/11",
+          "num": 20261011,
+          "empty": "",
+          "flag": true,
+          "tags": [
+            "a"
+          ]
+        },
+        "$index": 3,
+        "orderNo": "A2026-001"
+      },
+      "expect": "2026-02-30"
+    },
+    {
+      "name": "date-overflow-hour-passthrough",
+      "description": "24:00:00 不收（严格解析）= 原文直通",
+      "template": "{{date(row.h24)}}",
+      "context": {
+        "row": {
+          "d": "2026-10-11 14:30:05",
+          "day": "2026-10-11",
+          "isoT": "2026-10-11T14:30:05",
+          "oob": "2026-02-30",
+          "h24": "2026-10-11 24:00:00",
+          "bad": "2026/10/11",
+          "num": 20261011,
+          "empty": "",
+          "flag": true,
+          "tags": [
+            "a"
+          ]
+        },
+        "$index": 3,
+        "orderNo": "A2026-001"
+      },
+      "expect": "2026-10-11 24:00:00"
+    },
+    {
+      "name": "date-empty-value-empty-output",
+      "description": "空串输入 = 空串信号",
+      "template": "x{{date(row.empty)}}",
+      "context": {
+        "row": {
+          "d": "2026-10-11 14:30:05",
+          "day": "2026-10-11",
+          "isoT": "2026-10-11T14:30:05",
+          "oob": "2026-02-30",
+          "h24": "2026-10-11 24:00:00",
+          "bad": "2026/10/11",
+          "num": 20261011,
+          "empty": "",
+          "flag": true,
+          "tags": [
+            "a"
+          ]
+        },
+        "$index": 3,
+        "orderNo": "A2026-001"
+      },
+      "expect": "x"
+    },
+    {
+      "name": "date-missing-field-empty-output",
+      "description": "字段缺失 = 空串信号",
+      "template": "{{date(row.nope)}}",
+      "context": {
+        "row": {
+          "d": "2026-10-11 14:30:05",
+          "day": "2026-10-11",
+          "isoT": "2026-10-11T14:30:05",
+          "oob": "2026-02-30",
+          "h24": "2026-10-11 24:00:00",
+          "bad": "2026/10/11",
+          "num": 20261011,
+          "empty": "",
+          "flag": true,
+          "tags": [
+            "a"
+          ]
+        },
+        "$index": 3,
+        "orderNo": "A2026-001"
+      },
+      "expect": ""
+    },
+    {
+      "name": "date-bool-type-mismatch",
+      "description": "bool 落参数位 = 报错（字符串化双端不一致）",
+      "template": "{{date(row.flag)}}",
+      "context": {
+        "row": {
+          "d": "2026-10-11 14:30:05",
+          "day": "2026-10-11",
+          "isoT": "2026-10-11T14:30:05",
+          "oob": "2026-02-30",
+          "h24": "2026-10-11 24:00:00",
+          "bad": "2026/10/11",
+          "num": 20261011,
+          "empty": "",
+          "flag": true,
+          "tags": [
+            "a"
+          ]
+        },
+        "$index": 3,
+        "orderNo": "A2026-001"
+      },
+      "expect": {
+        "errorCode": "expression_type_mismatch"
+      }
+    },
+    {
+      "name": "date-container-type-mismatch",
+      "description": "数组落参数位 = 报错",
+      "template": "{{date(row.tags)}}",
+      "context": {
+        "row": {
+          "d": "2026-10-11 14:30:05",
+          "day": "2026-10-11",
+          "isoT": "2026-10-11T14:30:05",
+          "oob": "2026-02-30",
+          "h24": "2026-10-11 24:00:00",
+          "bad": "2026/10/11",
+          "num": 20261011,
+          "empty": "",
+          "flag": true,
+          "tags": [
+            "a"
+          ]
+        },
+        "$index": 3,
+        "orderNo": "A2026-001"
+      },
+      "expect": {
+        "errorCode": "expression_type_mismatch"
+      }
+    },
+    {
+      "name": "date-zero-args-syntax-error",
+      "description": "零参调用文法合法但签名层拒 = 参数个数不符",
+      "template": "{{date()}}",
+      "context": {
+        "row": {
+          "d": "2026-10-11 14:30:05",
+          "day": "2026-10-11",
+          "isoT": "2026-10-11T14:30:05",
+          "oob": "2026-02-30",
+          "h24": "2026-10-11 24:00:00",
+          "bad": "2026/10/11",
+          "num": 20261011,
+          "empty": "",
+          "flag": true,
+          "tags": [
+            "a"
+          ]
+        },
+        "$index": 3,
+        "orderNo": "A2026-001"
+      },
+      "expect": {
+        "errorCode": "expression_syntax_error"
+      }
+    },
+    {
+      "name": "date-three-args-syntax-error",
+      "description": "≥3 参 = 参数个数不符",
+      "template": "{{date(row.d, 'YYYY', 2)}}",
+      "context": {
+        "row": {
+          "d": "2026-10-11 14:30:05",
+          "day": "2026-10-11",
+          "isoT": "2026-10-11T14:30:05",
+          "oob": "2026-02-30",
+          "h24": "2026-10-11 24:00:00",
+          "bad": "2026/10/11",
+          "num": 20261011,
+          "empty": "",
+          "flag": true,
+          "tags": [
+            "a"
+          ]
+        },
+        "$index": 3,
+        "orderNo": "A2026-001"
+      },
+      "expect": {
+        "errorCode": "expression_syntax_error"
+      }
+    },
+    {
+      "name": "date-second-arg-number-syntax-error",
+      "description": "date 第二参须为字符串字面量",
+      "template": "{{date(row.d, 5)}}",
+      "context": {
+        "row": {
+          "d": "2026-10-11 14:30:05",
+          "day": "2026-10-11",
+          "isoT": "2026-10-11T14:30:05",
+          "oob": "2026-02-30",
+          "h24": "2026-10-11 24:00:00",
+          "bad": "2026/10/11",
+          "num": 20261011,
+          "empty": "",
+          "flag": true,
+          "tags": [
+            "a"
+          ]
+        },
+        "$index": 3,
+        "orderNo": "A2026-001"
+      },
+      "expect": {
+        "errorCode": "expression_syntax_error"
+      }
+    },
+    {
+      "name": "date-first-arg-string-syntax-error",
+      "description": "首参文法层钉死为路径：字符串实参 = 语法错",
+      "template": "{{date('2026-10-11')}}",
+      "context": {
+        "row": {
+          "d": "2026-10-11 14:30:05",
+          "day": "2026-10-11",
+          "isoT": "2026-10-11T14:30:05",
+          "oob": "2026-02-30",
+          "h24": "2026-10-11 24:00:00",
+          "bad": "2026/10/11",
+          "num": 20261011,
+          "empty": "",
+          "flag": true,
+          "tags": [
+            "a"
+          ]
+        },
+        "$index": 3,
+        "orderNo": "A2026-001"
+      },
+      "expect": {
+        "errorCode": "expression_syntax_error"
+      }
+    },
+    {
+      "name": "date-whitespace-tolerated",
+      "description": "调用内空白容忍：实参间 WS* 合法",
+      "template": "{{ date( row.d , 'YYYY-MM-DD' ) }}",
+      "context": {
+        "row": {
+          "d": "2026-10-11 14:30:05",
+          "day": "2026-10-11",
+          "isoT": "2026-10-11T14:30:05",
+          "oob": "2026-02-30",
+          "h24": "2026-10-11 24:00:00",
+          "bad": "2026/10/11",
+          "num": 20261011,
+          "empty": "",
+          "flag": true,
+          "tags": [
+            "a"
+          ]
+        },
+        "$index": 3,
+        "orderNo": "A2026-001"
+      },
+      "expect": "2026-10-11"
+    },
+    {
+      "name": "date-row-outside-loop",
+      "description": "调用首参 row. 前缀在非行上下文 = 报错（同门声明）",
+      "template": "{{date(row.d)}}",
+      "context": {
+        "orderNo": "A2026-001",
+        "nested": {
+          "k": "v"
+        }
+      },
+      "expect": {
+        "errorCode": "expression_row_outside_loop"
+      }
+    }
+  ],
+  "dateTokens": {
+    "sample": "2026-10-11 14:30:05",
+    "rows": [
+      {
+        "token": "YYYY",
+        "semantics": "四位年，零填充 4 位",
+        "expect": "2026"
+      },
+      {
+        "token": "YY",
+        "semantics": "年后两位，零填充 2 位",
+        "expect": "26"
+      },
+      {
+        "token": "MM",
+        "semantics": "两位月 01-12",
+        "expect": "10"
+      },
+      {
+        "token": "M",
+        "semantics": "月 1-12",
+        "expect": "10"
+      },
+      {
+        "token": "DD",
+        "semantics": "两位日 01-31",
+        "expect": "11"
+      },
+      {
+        "token": "D",
+        "semantics": "日 1-31",
+        "expect": "11"
+      },
+      {
+        "token": "HH",
+        "semantics": "两位时 00-23",
+        "expect": "14"
+      },
+      {
+        "token": "H",
+        "semantics": "时 0-23",
+        "expect": "14"
+      },
+      {
+        "token": "mm",
+        "semantics": "两位分 00-59",
+        "expect": "30"
+      },
+      {
+        "token": "m",
+        "semantics": "分 0-59",
+        "expect": "30"
+      },
+      {
+        "token": "ss",
+        "semantics": "两位秒 00-59",
+        "expect": "05"
+      },
+      {
+        "token": "s",
+        "semantics": "秒 0-59",
+        "expect": "5"
+      },
+      {
+        "token": "dddd",
+        "semantics": "周几中文全称：星期日…星期六",
+        "expect": "星期日"
+      },
+      {
+        "token": "ddd",
+        "semantics": "周几中文简称：周日…周六",
+        "expect": "周日"
+      }
+    ]
+  }
+}
