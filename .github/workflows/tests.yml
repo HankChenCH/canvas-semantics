@@ -1,0 +1,42 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  canvasctl:
+    name: canvasctl（构建 + 测试 + 语料门禁）
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: gofmt 检查
+        run: test -z "$(gofmt -l .)" || { gofmt -l .; exit 1; }
+      - name: go vet
+        run: go vet ./...
+        env:
+          GOWORK: 'off'
+      - name: go test
+        run: go test ./...
+        env:
+          GOWORK: 'off'
+      - name: go build
+        run: go build -o bin/ ./canvasctl
+        env:
+          GOWORK: 'off'
+      # 语料门禁：坏语料在进入消费仓之前被拦下（工作区 .scratch/canvas-semantics/spec.md User Story 13）
+      - name: 语料 validate 门禁
+        run: go run ./canvasctl validate .
+        env:
+          GOWORK: 'off'

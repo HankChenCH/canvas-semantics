@@ -1,0 +1,5 @@
+# 构建产物（go build -o bin/ ./canvasctl；不带 -o 的根级二进制与 canvasctl/ 源码目录同名，勿用）
+/bin/
+
+# macOS
+.DS_Store

@@ -1,0 +1,7 @@
+{
+  "registry": "canvas-semantics/error-codes v1",
+  "codes": [
+    "expression_syntax_error"
+  ],
+  "reserved": []
+}

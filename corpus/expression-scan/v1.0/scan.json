@@ -1,0 +1,500 @@
+{
+  "meta": {
+    "contract": "expression-scan v1.0",
+    "notes": [
+      "迁自 php-canvas-next/scripts/export-scan-fixtures.php 导出载体（2026-10-18，工票 02），自此手维护为本仓语义权威，cases 与导出载体逐字段一致；",
+      "载体形态：cases[] = {name, description, template, expect.parts[]}；part = literal{text} | fragment{raw,expr,error} | open{text,expr}；不含位置字段（PHP 字节索引与 JS 码元索引不同空间，各端自行派生）；空字面一律省略；",
+      "open 切分 = 未闭合 {{ 的编辑器补全触发态，求值期按字面拼回，TS 扫描器同款；光标所在片段判定是编辑器侧语义（PHP 无光标概念），不入本用例集；",
+      "外壳文法语义（trim 字符集边界、嵌套、错误分类等）以用例为准，薄规格正文随工票 03 落笔"
+    ]
+  },
+  "cases": [
+    {
+      "name": "empty-template",
+      "description": "空串无片段",
+      "template": "",
+      "expect": {
+        "parts": []
+      }
+    },
+    {
+      "name": "plain-literal-no-braces",
+      "description": "不含 {{ 的串整串字面（合法无意义）",
+      "template": "纯文本",
+      "expect": {
+        "parts": [
+          {
+            "kind": "literal",
+            "text": "纯文本"
+          }
+        ]
+      }
+    },
+    {
+      "name": "close-without-open-literal",
+      "description": "孤立 }} 无开标记 = 字面直通",
+      "template": "a}}b",
+      "expect": {
+        "parts": [
+          {
+            "kind": "literal",
+            "text": "a}}b"
+          }
+        ]
+      }
+    },
+    {
+      "name": "single-fragment",
+      "description": "单片段（根键）",
+      "template": "{{orderNo}}",
+      "expect": {
+        "parts": [
+          {
+            "kind": "fragment",
+            "raw": "orderNo",
+            "expr": "orderNo",
+            "error": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "literal-fragment-mix-chinese",
+      "description": "字面与片段混排（中文前后缀 + $index）",
+      "template": "姓名：{{row.name}}（{{$index}}）",
+      "expect": {
+        "parts": [
+          {
+            "kind": "literal",
+            "text": "姓名："
+          },
+          {
+            "kind": "fragment",
+            "raw": "row.name",
+            "expr": "row.name",
+            "error": null
+          },
+          {
+            "kind": "literal",
+            "text": "（"
+          },
+          {
+            "kind": "fragment",
+            "raw": "$index",
+            "expr": "$index",
+            "error": null
+          },
+          {
+            "kind": "literal",
+            "text": "）"
+          }
+        ]
+      }
+    },
+    {
+      "name": "adjacent-fragments",
+      "description": "相邻片段之间不产空字面",
+      "template": "{{orderNo}}{{row.name}}",
+      "expect": {
+        "parts": [
+          {
+            "kind": "fragment",
+            "raw": "orderNo",
+            "expr": "orderNo",
+            "error": null
+          },
+          {
+            "kind": "fragment",
+            "raw": "row.name",
+            "expr": "row.name",
+            "error": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "ascii-whitespace-trimmed",
+      "description": "花括号内 ASCII 空白容忍（trim 六字符集：空格/制表/换行/回车/NUL/垂直制表）",
+      "template": "{{\t row.name \n}}",
+      "expect": {
+        "parts": [
+          {
+            "kind": "fragment",
+            "raw": "\t row.name \n",
+            "expr": "row.name",
+            "error": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "fullwidth-space-not-trimmed",
+      "description": "全角空格不属 trim 字符集（PHP trim 六字符；TS 勿用 String.trim）",
+      "template": "{{　row.name　}}",
+      "expect": {
+        "parts": [
+          {
+            "kind": "fragment",
+            "raw": "　row.name　",
+            "expr": "　row.name　",
+            "error": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "unclosed-tail-literal",
+      "description": "未闭合 {{ 剩余全字面（前置字面 + open 触发态）",
+      "template": "价格 {{row.name",
+      "expect": {
+        "parts": [
+          {
+            "kind": "literal",
+            "text": "价格 "
+          },
+          {
+            "kind": "open",
+            "text": "{{row.name",
+            "expr": "row.name"
+          }
+        ]
+      }
+    },
+    {
+      "name": "unclosed-after-closed-fragment",
+      "description": "片段之后未闭合：闭合片段照常，其后全字面",
+      "template": "A{{orderNo}}B{{unclosed",
+      "expect": {
+        "parts": [
+          {
+            "kind": "literal",
+            "text": "A"
+          },
+          {
+            "kind": "fragment",
+            "raw": "orderNo",
+            "expr": "orderNo",
+            "error": null
+          },
+          {
+            "kind": "literal",
+            "text": "B"
+          },
+          {
+            "kind": "open",
+            "text": "{{unclosed",
+            "expr": "unclosed"
+          }
+        ]
+      }
+    },
+    {
+      "name": "unclosed-open-at-end",
+      "description": "以 {{ 结尾（补全触发态，expr 为空）",
+      "template": "x{{",
+      "expect": {
+        "parts": [
+          {
+            "kind": "literal",
+            "text": "x"
+          },
+          {
+            "kind": "open",
+            "text": "{{",
+            "expr": ""
+          }
+        ]
+      }
+    },
+    {
+      "name": "unclosed-without-prefix",
+      "description": "未闭合 {{ 起于串首（无前置字面）",
+      "template": "{{unclosed",
+      "expect": {
+        "parts": [
+          {
+            "kind": "open",
+            "text": "{{unclosed",
+            "expr": "unclosed"
+          }
+        ]
+      }
+    },
+    {
+      "name": "unclosed-swallows-inner-open",
+      "description": "未闭合吞并其后的 {{（无 }} 可收口，直到串尾）",
+      "template": "{{a{{b",
+      "expect": {
+        "parts": [
+          {
+            "kind": "open",
+            "text": "{{a{{b",
+            "expr": "a{{b"
+          }
+        ]
+      }
+    },
+    {
+      "name": "triple-open-brace",
+      "description": "三连开括号：首 {{ 为外壳，{ 落入内容",
+      "template": "{{{orderNo}}",
+      "expect": {
+        "parts": [
+          {
+            "kind": "fragment",
+            "raw": "{orderNo",
+            "expr": "{orderNo",
+            "error": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "inner-open-no-nesting",
+      "description": "{{}} 不嵌套：片段内容含 {{，首个 }} 收口",
+      "template": "{{a{{b}}}}",
+      "expect": {
+        "parts": [
+          {
+            "kind": "fragment",
+            "raw": "a{{b",
+            "expr": "a{{b",
+            "error": null
+          },
+          {
+            "kind": "literal",
+            "text": "}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "inner-open-outer-content",
+      "description": "四连开括号：内容以前导 {{ 开头",
+      "template": "{{{{orderNo}}}}",
+      "expect": {
+        "parts": [
+          {
+            "kind": "fragment",
+            "raw": "{{orderNo",
+            "expr": "{{orderNo",
+            "error": null
+          },
+          {
+            "kind": "literal",
+            "text": "}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "extra-close-brace-literal",
+      "description": "片段后尾随 }} 为字面",
+      "template": "{{orderNo}}}}",
+      "expect": {
+        "parts": [
+          {
+            "kind": "fragment",
+            "raw": "orderNo",
+            "expr": "orderNo",
+            "error": null
+          },
+          {
+            "kind": "literal",
+            "text": "}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "root-explicit",
+      "description": "$root 显式取根",
+      "template": "{{$root.orderNo}}",
+      "expect": {
+        "parts": [
+          {
+            "kind": "fragment",
+            "raw": "$root.orderNo",
+            "expr": "$root.orderNo",
+            "error": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "dollar-index-bare",
+      "description": "$index 按裸键分类",
+      "template": "{{$index}}",
+      "expect": {
+        "parts": [
+          {
+            "kind": "fragment",
+            "raw": "$index",
+            "expr": "$index",
+            "error": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "chinese-bare-key",
+      "description": "中文裸键",
+      "template": "单号：{{订单号}}",
+      "expect": {
+        "parts": [
+          {
+            "kind": "literal",
+            "text": "单号："
+          },
+          {
+            "kind": "fragment",
+            "raw": "订单号",
+            "expr": "订单号",
+            "error": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "multi-byte-split",
+      "description": "多字节字面与片段交错（索引空间各端自行派生，只钉内容）",
+      "template": "{{row.name}}在{{orderNo}}单",
+      "expect": {
+        "parts": [
+          {
+            "kind": "fragment",
+            "raw": "row.name",
+            "expr": "row.name",
+            "error": null
+          },
+          {
+            "kind": "literal",
+            "text": "在"
+          },
+          {
+            "kind": "fragment",
+            "raw": "orderNo",
+            "expr": "orderNo",
+            "error": null
+          },
+          {
+            "kind": "literal",
+            "text": "单"
+          }
+        ]
+      }
+    },
+    {
+      "name": "empty-fragment-syntax-error",
+      "description": "空片段 {{}} = 语法错误",
+      "template": "名：{{}}",
+      "expect": {
+        "parts": [
+          {
+            "kind": "literal",
+            "text": "名："
+          },
+          {
+            "kind": "fragment",
+            "raw": "",
+            "expr": "",
+            "error": "expression_syntax_error"
+          }
+        ]
+      }
+    },
+    {
+      "name": "whitespace-only-fragment-syntax-error",
+      "description": "纯空白片段 trim 后为空 = 语法错误",
+      "template": "名：{{   }}尾",
+      "expect": {
+        "parts": [
+          {
+            "kind": "literal",
+            "text": "名："
+          },
+          {
+            "kind": "fragment",
+            "raw": "   ",
+            "expr": "",
+            "error": "expression_syntax_error"
+          },
+          {
+            "kind": "literal",
+            "text": "尾"
+          }
+        ]
+      }
+    },
+    {
+      "name": "empty-path-segment-mid",
+      "description": "路径中部空段 = 语法错误",
+      "template": "{{row..name}}",
+      "expect": {
+        "parts": [
+          {
+            "kind": "fragment",
+            "raw": "row..name",
+            "expr": "row..name",
+            "error": "expression_syntax_error"
+          }
+        ]
+      }
+    },
+    {
+      "name": "empty-path-segment-leading",
+      "description": "前导点空段 = 语法错误",
+      "template": "{{.name}}",
+      "expect": {
+        "parts": [
+          {
+            "kind": "fragment",
+            "raw": ".name",
+            "expr": ".name",
+            "error": "expression_syntax_error"
+          }
+        ]
+      }
+    },
+    {
+      "name": "empty-path-segment-trailing",
+      "description": "尾点空段 = 语法错误",
+      "template": "{{row.name.}}",
+      "expect": {
+        "parts": [
+          {
+            "kind": "fragment",
+            "raw": "row.name.",
+            "expr": "row.name.",
+            "error": "expression_syntax_error"
+          }
+        ]
+      }
+    },
+    {
+      "name": "error-fragment-after-valid",
+      "description": "合法片段之后的错误片段照常切分",
+      "template": "{{orderNo}}{{row..x}}尾",
+      "expect": {
+        "parts": [
+          {
+            "kind": "fragment",
+            "raw": "orderNo",
+            "expr": "orderNo",
+            "error": null
+          },
+          {
+            "kind": "fragment",
+            "raw": "row..x",
+            "expr": "row..x",
+            "error": "expression_syntax_error"
+          },
+          {
+            "kind": "literal",
+            "text": "尾"
+          }
+        ]
+      }
+    }
+  ]
+}

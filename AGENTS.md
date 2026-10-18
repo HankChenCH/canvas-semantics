@@ -8,7 +8,9 @@
 
 - **治理**（已就位）：`GOVERNANCE.md`（MUST/MUST NOT/MAY、版本政策、提案生命周期、fail-fast 切分、自定义函数终态）、`SUPPORT-SURFACE.md`（支持面声明格式 + 模块注册表）。
 - **提案**（已就位）：`proposals/`（README 生命周期 + `0000-template.md`；语义演进的唯一通道）。
-- **薄规格正文** `spec/`、**语料** `corpus/`（按契约分目录、版本目录化）、**Go 工具** `canvasctl/`：工票 02 起落地，目录形态以届时实现为准。
+- **薄规格正文** `spec/`（占位：正文随工票 03/04 落笔；`spec/error-codes.json` 是错误 code 注册表，validate 白名单数据源）。
+- **语料** `corpus/<契约>/<v主.次>/<模块文件>.json`（扫描契约 v1.0 已入仓；其余四契约随工票 03/04 迁入）。
+- **Go 工具** `canvasctl/`：`validate` 子命令已就位（严格 typed 解码 + 双写互检 + code 白名单 + 用例名唯一）；lint/diff/release 随后续工票。
 - 消费端声明文件在各实现仓（`<repo>/support-surface.json`），本仓只定义格式与注册表。
 
 ## 红线（改动前先读 `GOVERNANCE.md` 全文）
@@ -22,7 +24,15 @@
 
 ## 命令
 
-（建仓期暂无；工票 02 落地 Go module 后此处补 `go build ./canvasctl` / `go test ./...` 等入口。）
+```sh
+cd canvas-semantics
+go test ./canvasctl/           # canvasctl 表驱动测试（校验规则钉在这里）
+go vet ./... && gofmt -l .     # 与 CI 同款静态检查
+go run ./canvasctl validate .  # 语料门禁（CI 同款）：语料形状 + 双写互检 + code 白名单
+go build -o bin/ ./canvasctl   # 构建单二进制（产物进 bin/；根级 canvasctl 与源码目录同名，勿裸 build）
+```
+
+Go module 是仓根 `go.mod`（纯 stdlib，零第三方依赖）；改语料或注册表后先跑 `validate` 再提交。
 
 ## 惯例
 
