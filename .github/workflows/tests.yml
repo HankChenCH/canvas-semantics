@@ -40,3 +40,8 @@ jobs:
         run: go run ./canvasctl validate .
         env:
           GOWORK: 'off'
+      # 治理 lint 门禁：提案期用例 ↔ 提案文档反链互检（GOVERNANCE §7，工票 08）
+      - name: 治理 lint 门禁
+        run: go run ./canvasctl lint .
+        env:
+          GOWORK: 'off'

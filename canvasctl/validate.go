@@ -34,13 +34,20 @@ var (
 	contractIDRe = regexp.MustCompile(`^[a-z][a-z0-9-]*$`)
 )
 
-// Result 汇总校验错误与计数（计数供 CLI 摘要输出）。
+// Result 汇总校验错误与计数（计数供 CLI 摘要输出）。Contracts/Versions/ModuleFiles/Cases
+// 属语料 validate 面；Surface* 属支持面声明三互检面；Proposal* 属治理 lint 反链面。
 type Result struct {
 	Errors      []error
 	Contracts   int
 	Versions    int
 	ModuleFiles int
 	Cases       int
+	// 支持面声明（validate --surface）
+	SurfaceContracts   int
+	SurfaceModuleFiles int
+	// 治理 lint（提案期用例 ↔ 提案文档反链）
+	ProposalDocs     int
+	ProposalCaseDirs int
 }
 
 func (r *Result) errf(format string, args ...any) {
@@ -84,8 +91,8 @@ func Validate(root string) Result {
 			continue
 		}
 		if name == "proposals" && ce.IsDir() {
-			// 提案期用例区（GOVERNANCE §7）：volatile、不占 contract 版本；
-			// validate 暂不校验，「提案期用例反链提案文档」等治理 lint 由后续工票接入。
+			// 提案期用例区（GOVERNANCE §7）：volatile、不占 contract 版本、不进合规集，
+			// 语料形状校验不涉；其「反链提案文档」治理检查归 lint 子命令。
 			continue
 		}
 		if !ce.IsDir() {
