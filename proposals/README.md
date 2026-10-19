@@ -32,3 +32,4 @@ proposal ── 转正三步一个 PR ──> integrated（文档保留为历史
 | 编号 | 标题 | 状态 | 提案期用例 |
 |---|---|---|---|
 | [001](0001-expression-fallback-warning.md) | 软诊断（warnings）语料面落地与 expression_fallback_empty 注册 | integrated（2026-10-18，工票 05） | 未单建（钉 PHP 权威端既有行为，正式用例随转正落 expand/flow v1.1） |
+| [002](0002-fn-date-quarter-token.md) | 日期 token 收编季度 Q（expression-eval v3.0） | integrated（2026-10-19，工票 08 验收演示） | 已迁入 `corpus/expression-eval/v3.0/fn-date.json`（提案期目录随之删除） |

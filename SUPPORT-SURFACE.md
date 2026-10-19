@@ -17,7 +17,7 @@
 
 | 契约 id | 语义域 | 版本规范形 | 模块文件 | 模块文件说明 |
 |---|---|---|---|---|
-| `expression-eval` | 表达式求值 | `v2.0`（存量 `v2` 迁入时归一） | `shell` | mustache 外壳与片段切分语义 |
+| `expression-eval` | 表达式求值 | `v3.0`（季度 `Q` 随提案 0002 收编，2026-10-19；`v2.0` 目录冻结） | `shell` | mustache 外壳与片段切分语义 |
 | | | | `path` | 路径求值与保留名 |
 | | | | `fn-date` | 日期函数与 dateTokens 转译 |
 | | | | `fn-number` | 数字函数族 number/fixed/percent（共享格式化底座故共文件） |
@@ -44,7 +44,7 @@
   "contracts": [
     {
       "id": "expression-eval",
-      "version": "v2.0",
+      "version": "v3.0",
       "moduleFiles": [
         { "id": "shell",     "support": "supported", "note": "" },
         { "id": "path",      "support": "supported", "note": "" },

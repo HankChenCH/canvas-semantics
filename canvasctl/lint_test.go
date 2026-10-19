@@ -166,13 +166,14 @@ func TestLintTable(t *testing.T) {
 	}
 }
 
-// 端到端：仓内真实提案区必须全绿（README 索引 + 0000 模板 + 0001 integrated 无目录）。
+// 端到端：仓内真实提案区必须全绿（README 索引 + 0000 模板不参与生命周期；存量
+// 0001/0002 两提案均已 integrated）。计数随提案增长，此处只钉下界与全绿。
 func TestRealProposalsGreen(t *testing.T) {
 	res := Lint("..")
 	if len(res.Errors) != 0 {
 		t.Fatalf("真实提案区应全绿：\n%s", joinErrs(res.Errors))
 	}
-	if res.ProposalDocs != 1 { // 0001（README/0000 模板除外）
+	if res.ProposalDocs < 1 {
 		t.Fatalf("提案文档计数异常：%+v", res)
 	}
 }

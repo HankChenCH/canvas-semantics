@@ -1,0 +1,256 @@
+{
+    "meta": {
+        "contract": "expression-eval v3.0",
+        "notes": [
+            "迁自 go-canvas/hydrate/testdata/expression-eval.json（PHP 权威导出脚本 php-canvas-next/scripts/export-hydrate-fixtures.php 的导出载体，2026-10-18，工票 03），自此手维护为本仓语义权威，用例逐字段原样搬运；",
+            "模块拆分：原载体单文件且每例带 group（value|date|number），拆分后归属由模块文件承载、group 字段退役——date→fn-date、number→fn-number，value 32 例按语义面拆归 shell（17：切分/片段分类/调用文法）与 path（15：取值/上下文/保留名）；",
+            "存量 meta.contract v2 归一为 v2.0、generator 字段退役（GOVERNANCE §4/§9）；原 meta.notes 中的语义注记（分轴哲学、fail-fast 错误分类、求值上下文形状、极端浮点不保证等）升格薄规格 spec/expression.md；",
+            "迁移期间消费仓零感知：go-canvas 仍读旧位置，消费翻转随工票 06/07。",
+            "本文件对应支持面注册表模块 path（路径求值与保留名，SUPPORT-SURFACE.md §2）；权威正文 spec/expression.md。",
+            "v3.0 全量快照：cases 逐字节承 v2.0 同名文件（用例零变化；meta 按双写互检随目录升 v3.0，2026-10-19 提案 0002 转正随行）。"
+        ]
+    },
+    "cases": [
+        {
+            "name": "row-field-and-literal-mix",
+            "description": "行字段与字面混排 + $index 插值",
+            "template": "姓名：{{row.name}}（{{$index}}）",
+            "context": {
+                "row": {
+                    "name": "张三",
+                    "user": {
+                        "city": "杭州"
+                    },
+                    "score": 98.5
+                },
+                "$index": 3,
+                "orderNo": "A2026-001"
+            },
+            "expect": "姓名：张三（3）"
+        },
+        {
+            "name": "bare-name-reads-root-key",
+            "description": "裸名只读全局根键（命名空间分离，无遮蔽）",
+            "template": "{{orderNo}}",
+            "context": {
+                "row": {
+                    "name": "张三",
+                    "user": {
+                        "city": "杭州"
+                    },
+                    "score": 98.5
+                },
+                "$index": 3,
+                "orderNo": "A2026-001"
+            },
+            "expect": "A2026-001"
+        },
+        {
+            "name": "nested-dot-path-row",
+            "description": "行字段嵌套点路径下钻",
+            "template": "{{row.user.city}}",
+            "context": {
+                "row": {
+                    "name": "张三",
+                    "user": {
+                        "city": "杭州"
+                    },
+                    "score": 98.5
+                },
+                "$index": 3,
+                "orderNo": "A2026-001"
+            },
+            "expect": "杭州"
+        },
+        {
+            "name": "nested-dot-path-root",
+            "description": "根键嵌套点路径下钻",
+            "template": "{{nested.k}}",
+            "context": {
+                "orderNo": "A2026-001",
+                "nested": {
+                    "k": "v"
+                }
+            },
+            "expect": "v"
+        },
+        {
+            "name": "root-escape-equals-bare-name",
+            "description": "$root 显式取根与裸名等价",
+            "template": "{{$root.orderNo}}",
+            "context": {
+                "row": {
+                    "name": "张三",
+                    "user": {
+                        "city": "杭州"
+                    },
+                    "score": 98.5
+                },
+                "$index": 3,
+                "orderNo": "A2026-001"
+            },
+            "expect": "A2026-001"
+        },
+        {
+            "name": "numeric-float-stringified",
+            "description": "浮点字符串化（常规区间）",
+            "template": "{{row.score}}",
+            "context": {
+                "row": {
+                    "name": "张三",
+                    "user": {
+                        "city": "杭州"
+                    },
+                    "score": 98.5
+                },
+                "$index": 3,
+                "orderNo": "A2026-001"
+            },
+            "expect": "98.5"
+        },
+        {
+            "name": "index-stringified",
+            "description": "$index 整数字符串化",
+            "template": "{{$index}}",
+            "context": {
+                "row": {
+                    "name": "张三",
+                    "user": {
+                        "city": "杭州"
+                    },
+                    "score": 98.5
+                },
+                "$index": 3,
+                "orderNo": "A2026-001"
+            },
+            "expect": "3"
+        },
+        {
+            "name": "missing-row-field-empty-signal",
+            "description": "行缺字段 = 空串信号（字段类策略由展开器施加）",
+            "template": "姓名：{{row.nickname}}",
+            "context": {
+                "row": {
+                    "name": "张三",
+                    "user": {
+                        "city": "杭州"
+                    },
+                    "score": 98.5
+                },
+                "$index": 3,
+                "orderNo": "A2026-001"
+            },
+            "expect": "姓名："
+        },
+        {
+            "name": "missing-root-field-empty-signal",
+            "description": "根缺字段 = 空串信号",
+            "template": "{{nickname}}",
+            "context": {
+                "other": "x"
+            },
+            "expect": ""
+        },
+        {
+            "name": "null-mid-path-empty-signal",
+            "description": "中途 null = 空串信号",
+            "template": "{{row.a}}",
+            "context": {
+                "row": {
+                    "a": null,
+                    "b": {
+                        "c": null
+                    }
+                },
+                "orderNo": "x"
+            },
+            "expect": ""
+        },
+        {
+            "name": "null-terminal-empty-signal",
+            "description": "末端 null = 空串信号",
+            "template": "{{row.b.c}}",
+            "context": {
+                "row": {
+                    "a": null,
+                    "b": {
+                        "c": null
+                    }
+                },
+                "orderNo": "x"
+            },
+            "expect": ""
+        },
+        {
+            "name": "type-mismatch-array-at-scalar",
+            "description": "数组落到标量位 = 报错",
+            "template": "{{row.user}}",
+            "context": {
+                "row": {
+                    "name": "张三",
+                    "user": {
+                        "city": "杭州"
+                    },
+                    "score": 98.5
+                },
+                "$index": 3,
+                "orderNo": "A2026-001"
+            },
+            "expect": {
+                "errorCode": "expression_type_mismatch"
+            }
+        },
+        {
+            "name": "type-mismatch-scalar-drill",
+            "description": "标量中途下钻 = 报错",
+            "template": "{{row.name.x}}",
+            "context": {
+                "row": {
+                    "name": "张三",
+                    "user": {
+                        "city": "杭州"
+                    },
+                    "score": 98.5
+                },
+                "$index": 3,
+                "orderNo": "A2026-001"
+            },
+            "expect": {
+                "errorCode": "expression_type_mismatch"
+            }
+        },
+        {
+            "name": "row-prefix-outside-row-context",
+            "description": "row. 前缀出现在非行上下文 = 报错（模板复制到表外）",
+            "template": "{{row.name}}",
+            "context": {
+                "orderNo": "A2026-001",
+                "nested": {
+                    "k": "v"
+                }
+            },
+            "expect": {
+                "errorCode": "expression_row_outside_loop"
+            }
+        },
+        {
+            "name": "malformed-path-syntax-error",
+            "description": "路径含空段 = 语法错误",
+            "template": "{{row..name}}",
+            "context": {
+                "row": {
+                    "name": "张三",
+                    "user": {
+                        "city": "杭州"
+                    },
+                    "score": 98.5
+                },
+                "$index": 3,
+                "orderNo": "A2026-001"
+            },
+            "expect": {
+                "errorCode": "expression_syntax_error"
+            }
+        }
+    ]
+}
