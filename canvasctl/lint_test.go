@@ -177,3 +177,23 @@ func TestRealProposalsGreen(t *testing.T) {
 		t.Fatalf("提案文档计数异常：%+v", res)
 	}
 }
+
+// CLI 参数解析：空串 / 未知旗标 / 多余位置参数退 usage，不越界不误读（评审发现）。
+func TestParseArgs(t *testing.T) {
+	if _, _, ok := parseArgs([]string{""}); ok {
+		t.Fatal("空串位置参数应退 usage")
+	}
+	if _, _, ok := parseArgs([]string{"--unknown"}); ok {
+		t.Fatal("未知旗标应退 usage")
+	}
+	if _, _, ok := parseArgs([]string{"--surface"}); ok {
+		t.Fatal("--surface 缺值应退 usage")
+	}
+	if _, _, ok := parseArgs([]string{"a", "b"}); ok {
+		t.Fatal("多余位置参数应退 usage")
+	}
+	root, surface, ok := parseArgs([]string{"--surface", "s.json", "root/dir"})
+	if !ok || root != "root/dir" || surface != "s.json" {
+		t.Fatalf("合法参数解析不符：%q %q %v", root, surface, ok)
+	}
+}

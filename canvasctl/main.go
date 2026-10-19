@@ -7,6 +7,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 )
 
 const usage = `canvasctl — canvas-semantics 治理工具（非规范性，见 GOVERNANCE.md §8）
@@ -26,23 +27,26 @@ const usage = `canvasctl — canvas-semantics 治理工具（非规范性，见 
 `
 
 // parseArgs 解析子命令后的参数：--surface 取值，其余为位置参数（root，至多一个）。
-// 未知旗标 / 多余位置参数返回 ok=false（usage 退出）。
+// 未知旗标 / 空串与多余位置参数返回 ok=false（usage 退出）。
 func parseArgs(args []string) (root string, surface string, ok bool) {
 	root = "."
 	for i := 0; i < len(args); i++ {
-		switch args[i] {
-		case "--surface":
+		switch {
+		case args[i] == "--surface":
 			if i+1 >= len(args) {
 				return "", "", false
 			}
 			i++
 			surface = args[i]
-		case "-h", "--help":
+		case args[i] == "-h" || args[i] == "--help":
+			return "", "", false
+		case strings.HasPrefix(args[i], "-"):
+			return "", "", false
+		case args[i] == "":
+			return "", "", false
+		case root != ".":
 			return "", "", false
 		default:
-			if args[i][0] == '-' || root != "." {
-				return "", "", false
-			}
 			root = args[i]
 		}
 	}
