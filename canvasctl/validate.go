@@ -774,7 +774,7 @@ func validateDateTokens(raw json.RawMessage, ctx string, res *Result) {
 	}
 }
 
-// validatePart 逐 kind 钉死 part 键集（与 PHP 侧 scanFixtureExportShape 的逐 kind 键集断言同构）：
+// validatePart 逐 kind 钉死 part 键集（expression-scan 语料 part 形状权威，三端 runner 逐字段消费同一键集）：
 // literal{kind,text} | fragment{kind,raw,expr,error} | open{kind,text,expr}。
 func validatePart(caseCtx string, idx int, raw json.RawMessage, reg *codeRegistry, res *Result) {
 	base := fmt.Sprintf("%s：expect.parts[%d]", caseCtx, idx)
