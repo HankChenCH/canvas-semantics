@@ -48,6 +48,20 @@ type Result struct {
 	// 治理 lint（提案期用例 ↔ 提案文档反链）
 	ProposalDocs     int
 	ProposalCaseDirs int
+	// 语料 diff（逐用例四类差异 + 文档级语义键）
+	DiffFiles         int
+	DiffAdded         int
+	DiffRemoved       int
+	DiffExpectChanged int
+	DiffNoteOnly      int
+	DiffExtras        int
+	// release（产物清点）
+	ReleaseContracts   int
+	ReleaseVersions    int
+	ReleaseModuleFiles int
+	ReleaseCases       int
+	ReleaseFiles       int
+	ReleaseBytes       int64
 }
 
 func (r *Result) errf(format string, args ...any) {

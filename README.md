@@ -12,7 +12,7 @@
 | 薄规格 | `spec/` | 语料钉不住的裁决（优先级、诊断发射顺序、未定义区）+ 错误 code 注册表 `spec/error-codes.json` |
 | 语料 | `corpus/` | 五契约用例集，按契约分目录、版本目录化（executable spec 本体） |
 | 提案 | `proposals/` | 语义演进的唯一通道（意图文档 + 提案期用例双轨，proposal → integrated） |
-| 工具 | `canvasctl/` | Go 单二进制治理工具（当前仅 `validate` 子命令；lint / diff / release 随后续工票） |
+| 工具 | `canvasctl/` | Go 单二进制治理工具（`validate` / `lint` / `diff` / `release` 四命令，命令清单见 `canvasctl/README.md`） |
 
 ## 语料布局与版本政策
 
@@ -28,13 +28,19 @@ corpus/<contract-id>/<version>/<module-file>.json
 
 ## canvasctl（Go 单二进制、纯 stdlib）
 
+四命令全量清单见 `canvasctl/README.md`；速览：
+
 ```sh
-go run ./canvasctl validate .    # 校验当前仓（corpus/ + spec/error-codes.json）
+go run ./canvasctl validate .                       # 语料门禁（CI 同款）：形状 + 双写互检 + code 白名单
+go run ./canvasctl validate . --surface ../support-surface.json   # 实现仓 CI：追加支持面声明三互检
+go run ./canvasctl lint .                           # 治理 lint（CI 同款）：提案期用例 ↔ 提案文档反链
+go run ./canvasctl diff . expression-eval v2.0 v3.0 # 语料 diff 人审摘要（四类差异 + 文档级语义键；差异非错误）
+go run ./canvasctl release . --out dist/rel-20261019 # 版本化语料产物（validate 全绿前置 + 产物自检）
 go build -o bin/ ./canvasctl     # 构建单二进制（产物进 bin/；根级 canvasctl 与源码目录同名，勿裸 build）
 go test ./canvasctl/             # 工具自身的表驱动测试
 ```
 
-`validate` 承担：语料形状校验（**严格 typed 解码——缺字段、未知字段即红**，「语料是法，法必须严」）、contract↔目录双写互检、错误 code 白名单（active `codes` 之外一律红，`reserved` 区永不复用）、用例名唯一（契约版本作用域）、版本目录规范形（`v<主>.<次>`）与模块文件布局检查。发现即红、逐条带定位（文件 / 用例名 / part 序号），exit 1；全绿输出计数摘要。
+`validate` 承担：语料形状校验（**严格 typed 解码——缺字段、未知字段即红**，「语料是法，法必须严」）、contract↔目录双写互检、错误 code 白名单（active `codes` 之外一律红，`reserved` 区永不复用）、用例名唯一（契约版本作用域）、版本目录规范形（`v<主>.<次>`）与模块文件布局检查。发现即红、逐条带定位（文件 / 用例名 / part 序号），exit 1；全绿输出计数摘要。`diff` 与 `validate/lint` 的 exit 语义相反：找到差异是常态输出（exit 0），语料不可信才 exit 1——摘要只做呈现、不裁语义。`release` 产出自含语料仓，checksum 可用系统 `sha256sum -c` 独立复核。
 
 > **非规范性声明**：canvasctl 只执行 `GOVERNANCE.md` 已钉死的形状与治理规则，**永不参与「什么是对的」裁决**。工具与语料结论冲突时，以语料 + 薄规格为准并视为工具 bug。语义争议走 `proposals/` 提案通道，不通过改工具解决。
 

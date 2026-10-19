@@ -90,7 +90,7 @@
 
 ## 8. 工具非规范性（canvasctl）
 
-canvasctl（Go 单二进制、纯 stdlib）承担语料形状校验（validate：严格 typed struct 解码、未知字段即红）、治理 lint（contract↔目录双写互检、code 白名单、用例名唯一、提案期用例反链提案文档）、语义化 diff 摘要与 release 产物。工具**非规范性**：只执行本文已钉死的形状与治理规则，MUST NOT 参与「什么是对的」裁决；工具与语料结论冲突时，以语料 + 薄规格为准并视为工具 bug。语料是法、法必须严（validate 未知字段即红）；渲染面的宽容读与语料面的严判方向相反且各自成立（§6）。
+canvasctl（Go 单二进制、纯 stdlib）四命令：语料形状校验（`validate`：严格 typed struct 解码、未知字段即红；`--surface` 追加支持面声明三互检）、治理 lint（`lint`：contract↔目录双写互检、code 白名单、用例名唯一、提案期用例反链提案文档）、语义化 diff 摘要（`diff [root] <契约> <版本A> <版本B>`：逐用例按名比对，新增/删除/期望值变化/仅注记变化四类，dateTokens 等文档级语义附加键单列——「语料 diff 即语义变更」的人审纪律从这份摘要进入）、release 产物（`release [root] --out <dir>`：corpus + spec 目录快照包 + MANIFEST checksum，供消费仓 pin 与审计存档；语料 validate 全绿是发版前置，产物落盘后自检——文件集、checksum、快照内 meta.contract 双写一致；提案期用例 volatile、不占版本，不入产物）。工具**非规范性**：只执行本文已钉死的形状与治理规则，MUST NOT 参与「什么是对的」裁决——diff 摘要只做呈现、不裁语义（找到差异不是错误，版本政策裁决仍归语料与提案通道），release 的自检只验「产物与语料源一致」、不验「语料本身该是什么」。工具与语料结论冲突时，以语料 + 薄规格为准并视为工具 bug。语料是法、法必须严（validate 未知字段即红）；渲染面的宽容读与语料面的严判方向相反且各自成立（§6）。
 
 ## 9. 语料编写纪律（约束语料作者，非合规面）
 

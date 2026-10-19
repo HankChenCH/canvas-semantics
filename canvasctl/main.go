@@ -19,10 +19,18 @@ const usage = `canvasctl — canvas-semantics 治理工具（非规范性，见 
       实现仓 CI 在 submodule 内以 --surface ../support-surface.json 校验自身声明）
   canvasctl lint [root]
       治理 lint：提案期用例 ↔ 提案文档反链互检（GOVERNANCE §7）
+  canvasctl diff [root] <契约> <版本A> <版本B>
+      语料 diff 的人审摘要：逐用例按名比对，新增 / 删除 / 期望值变化 / 仅注记变化
+      四类 + dateTokens 等文档级语义键；找到差异不是错误（exit 0），坏版本目录对、
+      语料不可严格解码才 exit 1——摘要只做呈现、不裁语义（版本政策裁决归语料与提案）
+  canvasctl release [root] --out <dir>
+      版本化语料产物（供消费仓 pin 与审计存档）：corpus/ + spec/ 目录快照包 +
+      MANIFEST.json（契约/版本/用例清点 + 逐文件 sha256）；语料 validate 全绿是发版
+      前置，产物落盘后自检（文件集/checksum/双写互检）不过即 exit 1
 
 语料布局:
   corpus/<contract-id>/<version>/<module-file>.json   契约 / 版本 / 模块文件
-  corpus/proposals/<编号>-<slug>/                     提案期用例（volatile，lint 反链）
+  corpus/proposals/<编号>-<slug>/                     提案期用例（volatile，lint 反链、不入 release 产物）
   spec/error-codes.json                               错误 code 注册表
 `
 
@@ -107,6 +115,39 @@ func main() {
 		}
 		fmt.Printf("✓ lint 通过：反链互检 %d 提案文档 / %d 提案期用例目录\n",
 			res.ProposalDocs, res.ProposalCaseDirs)
+
+	case "diff":
+		root, contract, versionA, versionB, ok := parseDiffArgs(args)
+		if !ok {
+			fmt.Fprint(os.Stderr, usage)
+			os.Exit(2)
+		}
+		res := Diff(root, contract, versionA, versionB)
+		if len(res.Errors) > 0 {
+			for _, e := range res.Errors {
+				fmt.Fprintf(os.Stderr, "✗ %s\n", e)
+			}
+			fmt.Fprintf(os.Stderr, "diff 未产出：语料不可信，%d 处不合（先 validate 修复再 diff）\n", len(res.Errors))
+			os.Exit(1)
+		}
+		fmt.Print(res.Summary())
+		fmt.Println()
+
+	case "release":
+		root, out, ok := parseReleaseArgs(args)
+		if !ok {
+			fmt.Fprint(os.Stderr, usage)
+			os.Exit(2)
+		}
+		res := Release(root, out)
+		if len(res.Errors) > 0 {
+			for _, e := range res.Errors {
+				fmt.Fprintf(os.Stderr, "✗ %s\n", e)
+			}
+			fmt.Fprintf(os.Stderr, "release 未产出：%d 处不合\n", len(res.Errors))
+			os.Exit(1)
+		}
+		fmt.Println(res.SummaryLine())
 
 	default:
 		fmt.Fprint(os.Stderr, usage)
