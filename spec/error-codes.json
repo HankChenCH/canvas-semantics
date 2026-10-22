@@ -17,6 +17,7 @@
     "content_overflow",
     "paginate_target_invalid",
     "page_geometry_invalid",
+    "paginate_option_invalid",
     "resource_download_failed",
     "resource_save_failed",
     "qr_generate_failed",

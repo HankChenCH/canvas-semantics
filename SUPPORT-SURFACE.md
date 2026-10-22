@@ -23,7 +23,7 @@
 | | | | `fn-number` | 数字函数族 number/fixed/percent（共享格式化底座故共文件） |
 | `expression-scan` | 表达式片段扫描（编辑器扫描面） | `v1.0` | `scan` | 整文件迁移，单模块 |
 | `expand-semantics` | hydrate 数据填充 | `v1.1`（软诊断语料面，工票 05） | `expand` | 整文件迁移，单模块 |
-| `paginate-semantics` | 分页 | `v1.0` | `paginate` | 整文件迁移，单模块 |
+| `paginate-semantics` | 分页 | `v2.0`（逐行拆分 `split` 随提案 003 转正，2026-10-22；`v1.0` 目录冻结） | `paginate` | 整文件迁移，单模块 |
 | `flow-semantics` | 内容流装箱 | `v1.1`（软诊断语料面，工票 05） | `flow` | 整文件迁移，单模块 |
 
 注册表演进规则：提案转正新增契约或模块文件时，本表增行并随语料发布（`GOVERNANCE.md` §7 转正第 3 步）；每契约每版本的模块文件集合以该版本语料目录的实际文件为准，本表跟随。tooling/渲染等非语料能力（layout、渲染原语）不在注册表、不在声明面——本仓不裁 wire 字节面。
@@ -68,7 +68,7 @@
     },
     {
       "id": "paginate-semantics",
-      "version": "v1.0",
+      "version": "v2.0",
       "moduleFiles": [
         { "id": "paginate", "support": "supported", "note": "" }
       ]

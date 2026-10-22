@@ -483,7 +483,7 @@ func validateExpandCase(relPath string, idx int, raw json.RawMessage, reg *codeR
 }
 
 // validatePaginateCase paginate-semantics 用例形状：graph + options（[] 空数组 = 无选项，
-// PHP 空关联数组 wire 形态；对象形态键集 {pageHeight?, truncate?} 严格解码）
+// PHP 空关联数组 wire 形态；对象形态键集 {pageHeight?, truncate?, split?} 严格解码）
 // + expect = {pages: [页 graph…]} | {errorCode}。
 func validatePaginateCase(relPath string, idx int, raw json.RawMessage, reg *codeRegistry, seenCaseNames map[string]string, res *Result) {
 	m, ctx := caseIdentity(relPath, idx, raw, seenCaseNames, res)
@@ -512,7 +512,8 @@ func validatePaginateCase(relPath string, idx int, raw json.RawMessage, reg *cod
 }
 
 // validatePaginateOptions options 信封形状：[] （空数组，与无选项同义）| 对象
-// {pageHeight?: 整数, truncate?: 布尔}（严格解码，未知键即红；对象内容语义归实现）。
+// {pageHeight?: 整数, truncate?: 布尔, split?: 字符串}（严格解码，未知键即红；对象内容语义归实现——
+// split 的枚举值裁决归语料用例（paginate:split-unknown-value-paginate-option-invalid），工具只钉形状）。
 func validatePaginateOptions(raw json.RawMessage, ctx string, res *Result) error {
 	trimmed := strings.TrimSpace(string(raw))
 	if trimmed == "[]" {
@@ -522,7 +523,7 @@ func validatePaginateOptions(raw json.RawMessage, ctx string, res *Result) error
 	if err != nil {
 		return fmt.Errorf("%s 应为空数组或对象（[] = 无选项）", ctx)
 	}
-	if err := checkKeys(m, nil, []string{"pageHeight", "truncate"}, ctx); err != nil {
+	if err := checkKeys(m, nil, []string{"pageHeight", "truncate", "split"}, ctx); err != nil {
 		return err
 	}
 	if raw, ok := m["pageHeight"]; ok {
@@ -532,6 +533,11 @@ func validatePaginateOptions(raw json.RawMessage, ctx string, res *Result) error
 	}
 	if raw, ok := m["truncate"]; ok {
 		if err := decodeBoolField(raw, "truncate", ctx); err != nil {
+			return err
+		}
+	}
+	if _, ok := m["split"]; ok {
+		if _, err := decodeStringField(m, "split", ctx); err != nil {
 			return err
 		}
 	}

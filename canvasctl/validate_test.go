@@ -819,6 +819,29 @@ func TestValidatePipelineTable(t *testing.T) {
 			wantErrCount: 0,
 		},
 		{
+			name: "绿：paginate options 对象形态（pageHeight + truncate + split，提案 003 键）",
+			files: map[string]string{
+				"spec/error-codes.json": pipelineRegistry(),
+				"corpus/paginate-semantics/v1.0/paginate.json": paginateDoc(func(m map[string]any) {
+					cases := m["cases"].([]any)
+					cases[0].(map[string]any)["options"] = map[string]any{"pageHeight": 250, "truncate": true, "split": "lines"}
+				}),
+			},
+			wantErrCount: 0,
+		},
+		{
+			name: "红：paginate options.split 类型坏",
+			files: map[string]string{
+				"spec/error-codes.json": pipelineRegistry(),
+				"corpus/paginate-semantics/v1.0/paginate.json": paginateDoc(func(m map[string]any) {
+					cases := m["cases"].([]any)
+					cases[0].(map[string]any)["options"] = map[string]any{"pageHeight": 250, "split": true}
+				}),
+			},
+			wantErrCount: 1,
+			wantSubstrs:  []string{`"split" 应为字符串`},
+		},
+		{
 			name: "绿：paginate expect = {errorCode}",
 			files: map[string]string{
 				"spec/error-codes.json": pipelineRegistry(),

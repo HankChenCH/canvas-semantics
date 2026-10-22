@@ -1,7 +1,7 @@
 # 003: 模板表逐行拆分分页模式（paginate options `split`，paginate-semantics v2.0）
 
-- 状态：proposal
-- 提案期用例：`corpus/proposals/003-row-split-pagination/`（paginate.json，8 用例 = 正例 6 + 负例 2，已建齐）
+- 状态：integrated（2026-10-22 转正，同一提交完成转正三步，记录见文末）
+- 提案期用例：已迁入 `corpus/paginate-semantics/v2.0/paginate.json`（提案期目录随之删除）
 - 关联：工作区 `.scratch/row-split-pagination/`（map + 工票 01 可行性 / 02 断行信息双端现状 / 03 治理路径 / 04 拆分语义九项拍定 / 06 业界六系统对照）；薄规格 `spec/pipeline.md` §3/§4/§7；`GOVERNANCE.md` §3.2（分页选项扩充通道）
 - 摘要：paginate options 开键面新增已知键 `split`（枚举 v1 仅 `"lines"`），开启模板表**按内容行逐行拆分**的第二种装箱模式——可拆文本行在页界按行切开、两片段独立边框盒续排，`content_overflow` 在该模式收窄为「不可拆残余」；未知枚举值 fail-fast 新 code `paginate_option_invalid`。现役「行是唯一装箱原子、永不切开」不变量在拆分模式下改写，原子模式（省略 `split`）语义零变化；语义变更走 paginate-semantics 主版本 v2.0（`GOVERNANCE.md` §3.2/§4）。
 
@@ -56,4 +56,9 @@
 
 ## 转正记录
 
-（proposal 态——转正三步一个 PR 后回填：语料落点 `corpus/paginate-semantics/v2.0/` 全量快照与提案期目录删除、`spec/pipeline.md` §3/§4/§7 条目合入、`spec/error-codes.json` 登记 `paginate_option_invalid`、`SUPPORT-SURFACE.md` §2 升版与双仓重签状态。）
+- 转正提交：工票 07（canvas-semantics 仓，2026-10-22；提案态三件套先行推 main（62898da）→ 转正一个提交，工作区 `.scratch/row-split-pagination/issues/07-task-semantics-promotion.md`）。
+- 语料落点：`corpus/paginate-semantics/v2.0/` 全量快照（v1.0 12 例逐字节承入、期望值零变化 + 提案期 8 例迁入，共 20 例）；提案期目录 `corpus/proposals/003-row-split-pagination/` 迁入后删除。
+- 薄规格登记：`spec/pipeline.md` 五条——§3 options 行 `split` 键与枚举守卫、§3 装箱条目改写（行原子不变量第三处落点：原子模式原样保留 + 拆分模式行退为最终原子）、§3 溢出条目收窄（`content_overflow` 仅达不可拆残余、truncate 同步收窄）、§4 code 表追加 `paginate_option_invalid`、§7 适用域（默认启发式度量栈）与反例域（增强度量注入 / 字素切分缝）。
+- 注册表登记：`spec/error-codes.json` active 区追加 `paginate_option_invalid`（追加永不复用，`GOVERNANCE.md` §2.2）；`SUPPORT-SURFACE.md` §2 paginate-semantics 版本规范形升至 `v2.0`；无新保留名、无新模块文件。
+- 工具形状登记：canvasctl validate 的 paginate options 形状键集增 `split`（string，形状而已；枚举值裁决归语料用例，工具非规范性不变）。
+- 实现仓重签状态：php-canvas-next 与 go-canvas 随 pin 移动重签 `support-surface.json`（paginate-semantics v1.0 → v2.0）+ 实现拆分模式（工作区工票 08/09，转正后进行中——runner 红 → 实现绿）；canvas-web（编辑器画像，不声明 paginate 契约）零改动。

@@ -1,6 +1,6 @@
-# pipeline.md — 编译管线薄规格（expand / flow v1.1，paginate v1.0）
+# pipeline.md — 编译管线薄规格（expand / flow v1.1，paginate v2.0）
 
-语义权威 = `corpus/expand-semantics/v1.1/` + `corpus/flow-semantics/v1.1/` + `corpus/paginate-semantics/v1.0/` 三契约语料 + 本正文（`GOVERNANCE.md` §0）。表达式求值（语料内部消费的求值器语义）归 `expression.md`，本正文只钉三步管线的输入输出不变量、组合时序与错误分类。条目以「契约缩写:用例名」指认钉住它的用例（expand: / flow: / paginate:）；标注 **[未钉]** 的条目是语料暂无用例的现状裁决，可随次版本补用例升格。
+语义权威 = `corpus/expand-semantics/v1.1/` + `corpus/flow-semantics/v1.1/` + `corpus/paginate-semantics/v2.0/` 三契约语料 + 本正文（`GOVERNANCE.md` §0）。表达式求值（语料内部消费的求值器语义）归 `expression.md`，本正文只钉三步管线的输入输出不变量、组合时序与错误分类。条目以「契约缩写:用例名」指认钉住它的用例（expand: / flow: / paginate:）；标注 **[未钉]** 的条目是语料暂无用例的现状裁决，可随次版本补用例升格。
 
 ## 0. 总览：管线组合与阶段模型
 
@@ -33,12 +33,13 @@
 - **空数据矩阵**：全链 0 行 → 每链帧各产 1 页零行空壳，omitIfEmpty 逐节点可关（flow:empty-dataset-matrix）。
 - **`frames_empty` 显式不立 code**：frames 空数组是入口守卫（调用方编程错误），消息可报、不进稳定 code 集——语料不收此形态（validate 钉 frames 非空），实现不得将其升格为锚点 code。
 
-## 3. 分页（paginate-semantics v1.0）
+## 3. 分页（paginate-semantics v2.0）
 
-- **options** = `{pageHeight: int, truncate?: bool}`（wire 空[] = 无选项）；`pageHeight ≤ 0` = `page_geometry_invalid` 构造期 fail-fast（paginate:page-geometry-invalid）；缺 pageHeight = 分页关——单元素直通、页 graph 与输入字节等价，溢出判定仍执行（paginate:passthrough-no-page-height）。
+- **options** = `{pageHeight: int, truncate?: bool, split?: "lines"}`（wire 空[] = 无选项；options 为**开键面**——未知键忽略纪律不变，`split` 是新增已知键）；`pageHeight ≤ 0` = `page_geometry_invalid` 构造期 fail-fast（paginate:page-geometry-invalid）；缺 pageHeight = 分页关——单元素直通、页 graph 与输入字节等价，溢出判定仍执行（paginate:passthrough-no-page-height）。**`split` 枚举守卫**（提案 003 新裁决：开键面下「键认识而值不认识」的处置）：枚举闭集 v1 仅 `"lines"`，键在而值 ∉ 闭集 = `paginate_option_invalid` 构造期 fail-fast（paginate:split-unknown-value-paginate-option-invalid）；守卫与分页开关正交恒执行，`split` 在分页关时不改变行为（直通 + 溢出判定不变，paginate:split-lines-key-ineffective-when-pagination-off）。
 - **页几何**：页宽恒 = 源画布宽、全页等高、末页留白不收缩（paginate:single-page-fit）；页高 = options.pageHeight（flow 链尾 paged 帧例外：页高 = 帧画布高，flow:paged-terminal-multi-page）。
 - **装箱**：行序列按行高保序装箱，可用区 = 页高 − 表顶 y（paginate:row-packing-split：页高 250、表顶 50 → [150+50][100+100]）；行恰好填满不产尾随空页（paginate:exact-fill-no-trailing-page）；表壳每页按声明重画、行切片从壳顶起（paginate:row-packing-split）；非驱动图层（页眉/落款）逐页按源坐标原样复制，页可视区外位图裁剪自理（paginate:non-table-layers-replicated）。
-- **溢出（`content_overflow`）**：分页关 + 行序列底边越画布底（paginate:overflow-off-throws）；分页开 + 单行超页容量且截断关（paginate:single-row-oversize-throws）。**截断选项**开启时不报错——超容行独占一页、超出部分位图裁剪自理（paginate:truncate-option-isolates-row）。
+- **行原子与拆分模式**（原「行是唯一装箱原子、永不切开」不变量的显式改写，提案 003）：**原子模式**（省略 `split`）行是唯一装箱原子、永不切开——语义零变化（v1.0 全部 12 例承入 v2.0 且期望值不变即钉）；**拆分模式**（`split: "lines"`）行退为最终原子——可拆行（行内所有格 content 均为文本层且最大内容行数 ≥ 2）在页界即拆、不整行下移（先整行下移、新页仍装不下才拆的 SplitLate 触发语义记演进位）；拆分界对全行统一：`K = min(floor(页剩余空间 / lineHeightPx), 最大内容行数 − 1)`，K < 1 整行下移（paginate:split-lines-row-at-page-boundary 钉 K 向下取整与 `\n` 硬断行切片）；各文本格前段装入 min(自身行数, K) 行、续段承余下行（格独立分片，「一格断行不强制他格断行」，paginate:split-lines-mixed-cells-empty-continuation）；两片段各画**独立边框盒**、格盒画满所在片段行高，续段短格 = 空内容格、长格余段顶对齐续排；片段作为等价新行重入装箱、可跨多页（paginate:split-lines-row-across-three-pages：三页 [200][200][80] 过程收敛）；单体格（图片/QR）行与单内容行的退化线不可拆、走原子路径（paginate:split-lines-monolithic-row-atomic-move、paginate:split-lines-degenerate-line-overflow）。行高以用例给定值为准；片段内容值切片以显式 `\n` 硬断行为钉面（用例行数不依赖断行度量，§7 适用域）。
+- **溢出（`content_overflow`）**：分页关 + 行序列底边越画布底（paginate:overflow-off-throws）；分页开 + 单行超页容量且截断关（paginate:single-row-oversize-throws）。**拆分模式收窄**（提案 003）：该模式下 `content_overflow` 仅达**不可拆残余**（单体格行、单内容行的退化线），可拆行超容走拆分分支、不报溢出——判定次序 = 拆分先于溢出/truncate（paginate:split-lines-degenerate-line-overflow 钉残余终态）；**截断选项**在拆分模式同步收窄为仅对不可拆行生效——可拆行照拆不截断（paginate:split-lines-truncate-narrows-to-unsplittable），不可拆残余超容行开启时独占一页、超出部分位图裁剪自理（paginate:truncate-option-isolates-row，原子模式语义不变）。
 - **分页目标**：顶层 TableLayer 恰 0 或 1 张——0 张 + 分页开 = 无内容可分、单页直通（paginate:no-table-passthrough）；≥2 张 = `paginate_target_invalid`（paginate:multi-table-invalid）。零行驱动表 = 1 页空壳、壳按声明画、行区零高（paginate:zero-rows-empty-shell）。
 
 ## 4. 错误分类与 code 注册表
@@ -51,7 +52,7 @@
 | 填充期（数据形状） | `HydrateException` | `rows_path_invalid` / `reserved_root_key` / `expression_empty_resource` / `expression_resource_single_ref` |
 | ↳ 求值器（经填充管线表达） | `HydrateException` 承载 | `expression_syntax_error` / `expression_type_mismatch` / `expression_row_outside_loop`（语义钉于 `expression.md` §5） |
 | 文档期（链与分配） | `FlowException` | `flow_chain_invalid` / `flow_rows_path_inconsistent` |
-| 分页期（页几何与装箱） | `PaginateException` | `content_overflow` / `paginate_target_invalid` / `page_geometry_invalid` |
+| 分页期（页几何、装箱与 options 守卫） | `PaginateException` | `content_overflow` / `paginate_target_invalid` / `page_geometry_invalid` / `paginate_option_invalid`（提案 003：`split` 键值 ∉ 枚举闭集，构造期 fail-fast） |
 | 绘制期（资源物化，渲染面） | `MaterializeException` | `resource_download_failed` / `resource_save_failed` / `qr_generate_failed` / `render_cancelled` / `render_deadline_exceeded` |
 
 - **reserved 区**：首轮为空（尚无退役 code）；入区即冻结、永不复用。
@@ -84,4 +85,5 @@
 - **绘制期（物化）行为不入语料**：资源下载/落盘/QR 生成/渲染取消与截止——渲染面 I/O，错误行为由实现仓测试钉（§4）；编译管线对其唯一承诺 = 求值产物为字面资源引用、填充 fail-fast 先于物化。
 - **layout / 排版语义不入语料**：断行度量、行高定稿的度量来源、位图裁剪渲染——wire 字节面权威不动（`GOVERNANCE.md` §0）；语料只钉装箱与回写的结构行为面（行高以用例给定值为准）。
 - **具体装箱边界数值**：切分点（每页行数）是装箱产物、逐用例钉定；未钉的边界组合（浮点行高累加误差等）不承诺跨端一致。
+- **拆分语义的适用域与反例域**（提案 003）：**适用域** = 默认启发式度量栈——行数与片段内容由定稿图给定，用例行数经显式 `\n` 硬断行给定、不依赖断行度量；**反例域** = 增强度量注入（Go `image-renderer/typography` OpenType、JS `measureText` 工厂）与字素切分缝（PHP ext-intl 图素簇 vs Go 码点）——编译期行数与渲染端实际行数漂移时，**末行可被渲染面位图裁剪**，兜底 = 「页可视区外由渲染面位图裁剪自理」既有先例（§3 装箱条目），不 fail-fast、不做软诊断；跨端不承诺拆分点像素/字节一致。**未钉组合显式不保证**（既有条目同构）：格间 lineHeightPx 异质行的拆分界、非零 padding 的片段算术、浮点行高累加误差——不承诺跨端一致。
 - **诊断发射序**（expand/flow v1.1 钉定）：warnings 收集序 = 帧序 → 图层文档序 → 行/格/内容声明序，由语料期望序列逐用例锁住（expand:text-fallback-template-row-sequence、flow:text-fallback-warnings-full-hydrate）；流路径 warnings 反映分配前的全量 hydrate（每帧模板表吃全量行实例）、按帧序累积、不带帧标识（帧标识升格走 spec 版本）。
