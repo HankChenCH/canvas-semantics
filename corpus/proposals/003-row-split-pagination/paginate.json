@@ -1,0 +1,5200 @@
+{
+  "meta": {
+    "contract": "paginate-semantics v2.0",
+    "notes": [
+      "提案 003(row-split-pagination)提案期用例,工票 05 产出;volatile、不占 contract 版本(GOVERNANCE §7),转正时全量迁入 corpus/paginate-semantics/v2.0/paginate.json(v1.0 12 例逐字节承入 + 本集 8 例);meta.contract 双写互检自转正起生效;",
+      "拆分语义依据 = proposals/003-row-split-pagination.md(工票 04 拍定九项决策);用例行数经显式 \\n 硬断行给定,不依赖断行度量(段宽远小于盒宽,行数在度量栈间稳定);",
+      "载体形态同 v1.0:cases[] = {name, description, graph, options, expect};options 开键面新增 split(枚举 v1 仅 \"lines\"),expect = {pages} | {errorCode}。"
+    ]
+  },
+  "cases": [
+    {
+      "name": "split-lines-row-at-page-boundary",
+      "description": "拆分基本形:行高 80(4 内容行×20)装不进页 1 剩余 40 → 页界即拆,K=floor(40/20)=2;前段 2 行(高 40)留页 1、余段 2 行(高 40)顶格续页 2;内容值按 \\n 硬断行切片",
+      "graph": {
+        "canvas": {
+          "width": 320,
+          "height": 450
+        },
+        "layers": [
+          {
+            "type": "TableLayer",
+            "priority": 0,
+            "spec": {
+              "shape": {
+                "width": 320,
+                "height": 400,
+                "autoWidth": false,
+                "autoHeight": false,
+                "lineHeight": 1,
+                "padding": {
+                  "top": 0,
+                  "bottom": 0,
+                  "left": 0,
+                  "right": 0
+                },
+                "border": {
+                  "top": null,
+                  "bottom": null,
+                  "left": null,
+                  "right": null
+                },
+                "backgroundColor": "#fff"
+              },
+              "align": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "position": {
+                "x": 0,
+                "y": 50,
+                "position": "top-left"
+              }
+            },
+            "rows": [
+              {
+                "type": "TableRowLayer",
+                "priority": 0,
+                "spec": {
+                  "shape": {
+                    "width": 320,
+                    "height": 160,
+                    "autoWidth": false,
+                    "autoHeight": false,
+                    "lineHeight": 1,
+                    "padding": {
+                      "top": 0,
+                      "bottom": 0,
+                      "left": 0,
+                      "right": 0
+                    },
+                    "border": {
+                      "top": null,
+                      "bottom": null,
+                      "left": null,
+                      "right": null
+                    },
+                    "backgroundColor": null
+                  },
+                  "align": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  },
+                  "position": {
+                    "x": 0,
+                    "y": 0,
+                    "position": "top-left"
+                  }
+                },
+                "cells": [
+                  {
+                    "type": "TableCellLayer",
+                    "priority": 0,
+                    "spec": {
+                      "shape": {
+                        "width": 320,
+                        "height": 160,
+                        "autoWidth": false,
+                        "autoHeight": false,
+                        "lineHeight": 1,
+                        "padding": {
+                          "top": 0,
+                          "bottom": 0,
+                          "left": 0,
+                          "right": 0
+                        },
+                        "border": {
+                          "top": null,
+                          "bottom": null,
+                          "left": null,
+                          "right": null
+                        },
+                        "backgroundColor": null
+                      },
+                      "align": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "position": "top-left"
+                      }
+                    },
+                    "content": {
+                      "type": "TextLayer",
+                      "priority": 0,
+                      "spec": {
+                        "shape": {
+                          "width": 320,
+                          "height": 160,
+                          "autoWidth": false,
+                          "autoHeight": false,
+                          "lineHeight": 1,
+                          "padding": {
+                            "top": 0,
+                            "bottom": 0,
+                            "left": 0,
+                            "right": 0
+                          },
+                          "border": {
+                            "top": null,
+                            "bottom": null,
+                            "left": null,
+                            "right": null
+                          },
+                          "backgroundColor": null
+                        },
+                        "align": {
+                          "horizontal": "left",
+                          "vertical": "top"
+                        },
+                        "position": {
+                          "x": 0,
+                          "y": 0,
+                          "position": "top-left"
+                        },
+                        "fontFamily": {
+                          "font": "",
+                          "fontSize": 20,
+                          "fontColor": "#000000",
+                          "angle": 0,
+                          "autowrap": false
+                        }
+                      },
+                      "data": {
+                        "valueType": "StaticValue",
+                        "expression": "",
+                        "value": "前置行"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "TableRowLayer",
+                "priority": 0,
+                "spec": {
+                  "shape": {
+                    "width": 320,
+                    "height": 80,
+                    "autoWidth": false,
+                    "autoHeight": false,
+                    "lineHeight": 1,
+                    "padding": {
+                      "top": 0,
+                      "bottom": 0,
+                      "left": 0,
+                      "right": 0
+                    },
+                    "border": {
+                      "top": null,
+                      "bottom": null,
+                      "left": null,
+                      "right": null
+                    },
+                    "backgroundColor": null
+                  },
+                  "align": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  },
+                  "position": {
+                    "x": 0,
+                    "y": 0,
+                    "position": "top-left"
+                  }
+                },
+                "cells": [
+                  {
+                    "type": "TableCellLayer",
+                    "priority": 0,
+                    "spec": {
+                      "shape": {
+                        "width": 320,
+                        "height": 80,
+                        "autoWidth": false,
+                        "autoHeight": false,
+                        "lineHeight": 1,
+                        "padding": {
+                          "top": 0,
+                          "bottom": 0,
+                          "left": 0,
+                          "right": 0
+                        },
+                        "border": {
+                          "top": null,
+                          "bottom": null,
+                          "left": null,
+                          "right": null
+                        },
+                        "backgroundColor": null
+                      },
+                      "align": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "position": "top-left"
+                      }
+                    },
+                    "content": {
+                      "type": "TextLayer",
+                      "priority": 0,
+                      "spec": {
+                        "shape": {
+                          "width": 320,
+                          "height": 80,
+                          "autoWidth": false,
+                          "autoHeight": false,
+                          "lineHeight": 1,
+                          "padding": {
+                            "top": 0,
+                            "bottom": 0,
+                            "left": 0,
+                            "right": 0
+                          },
+                          "border": {
+                            "top": null,
+                            "bottom": null,
+                            "left": null,
+                            "right": null
+                          },
+                          "backgroundColor": null
+                        },
+                        "align": {
+                          "horizontal": "left",
+                          "vertical": "top"
+                        },
+                        "position": {
+                          "x": 0,
+                          "y": 0,
+                          "position": "top-left"
+                        },
+                        "fontFamily": {
+                          "font": "",
+                          "fontSize": 20,
+                          "fontColor": "#000000",
+                          "angle": 0,
+                          "autowrap": true
+                        }
+                      },
+                      "data": {
+                        "valueType": "StaticValue",
+                        "expression": "",
+                        "value": "第一行内容\n第二行内容\n第三行内容\n第四行内容"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "pageHeight": 250,
+        "split": "lines"
+      },
+      "expect": {
+        "pages": [
+          {
+            "canvas": {
+              "width": 320,
+              "height": 250
+            },
+            "layers": [
+              {
+                "type": "TableLayer",
+                "priority": 0,
+                "spec": {
+                  "shape": {
+                    "width": 320,
+                    "height": 400,
+                    "autoWidth": false,
+                    "autoHeight": false,
+                    "lineHeight": 1,
+                    "padding": {
+                      "top": 0,
+                      "bottom": 0,
+                      "left": 0,
+                      "right": 0
+                    },
+                    "border": {
+                      "top": null,
+                      "bottom": null,
+                      "left": null,
+                      "right": null
+                    },
+                    "backgroundColor": "#fff"
+                  },
+                  "align": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  },
+                  "position": {
+                    "x": 0,
+                    "y": 50,
+                    "position": "top-left"
+                  }
+                },
+                "rows": [
+                  {
+                    "type": "TableRowLayer",
+                    "priority": 0,
+                    "spec": {
+                      "shape": {
+                        "width": 320,
+                        "height": 160,
+                        "autoWidth": false,
+                        "autoHeight": false,
+                        "lineHeight": 1,
+                        "padding": {
+                          "top": 0,
+                          "bottom": 0,
+                          "left": 0,
+                          "right": 0
+                        },
+                        "border": {
+                          "top": null,
+                          "bottom": null,
+                          "left": null,
+                          "right": null
+                        },
+                        "backgroundColor": null
+                      },
+                      "align": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "position": "top-left"
+                      }
+                    },
+                    "cells": [
+                      {
+                        "type": "TableCellLayer",
+                        "priority": 0,
+                        "spec": {
+                          "shape": {
+                            "width": 320,
+                            "height": 160,
+                            "autoWidth": false,
+                            "autoHeight": false,
+                            "lineHeight": 1,
+                            "padding": {
+                              "top": 0,
+                              "bottom": 0,
+                              "left": 0,
+                              "right": 0
+                            },
+                            "border": {
+                              "top": null,
+                              "bottom": null,
+                              "left": null,
+                              "right": null
+                            },
+                            "backgroundColor": null
+                          },
+                          "align": {
+                            "horizontal": "left",
+                            "vertical": "top"
+                          },
+                          "position": {
+                            "x": 0,
+                            "y": 0,
+                            "position": "top-left"
+                          }
+                        },
+                        "content": {
+                          "type": "TextLayer",
+                          "priority": 0,
+                          "spec": {
+                            "shape": {
+                              "width": 320,
+                              "height": 160,
+                              "autoWidth": false,
+                              "autoHeight": false,
+                              "lineHeight": 1,
+                              "padding": {
+                                "top": 0,
+                                "bottom": 0,
+                                "left": 0,
+                                "right": 0
+                              },
+                              "border": {
+                                "top": null,
+                                "bottom": null,
+                                "left": null,
+                                "right": null
+                              },
+                              "backgroundColor": null
+                            },
+                            "align": {
+                              "horizontal": "left",
+                              "vertical": "top"
+                            },
+                            "position": {
+                              "x": 0,
+                              "y": 0,
+                              "position": "top-left"
+                            },
+                            "fontFamily": {
+                              "font": "",
+                              "fontSize": 20,
+                              "fontColor": "#000000",
+                              "angle": 0,
+                              "autowrap": false
+                            }
+                          },
+                          "data": {
+                            "valueType": "StaticValue",
+                            "expression": "",
+                            "value": "前置行"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "TableRowLayer",
+                    "priority": 0,
+                    "spec": {
+                      "shape": {
+                        "width": 320,
+                        "height": 40,
+                        "autoWidth": false,
+                        "autoHeight": false,
+                        "lineHeight": 1,
+                        "padding": {
+                          "top": 0,
+                          "bottom": 0,
+                          "left": 0,
+                          "right": 0
+                        },
+                        "border": {
+                          "top": null,
+                          "bottom": null,
+                          "left": null,
+                          "right": null
+                        },
+                        "backgroundColor": null
+                      },
+                      "align": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "position": "top-left"
+                      }
+                    },
+                    "cells": [
+                      {
+                        "type": "TableCellLayer",
+                        "priority": 0,
+                        "spec": {
+                          "shape": {
+                            "width": 320,
+                            "height": 40,
+                            "autoWidth": false,
+                            "autoHeight": false,
+                            "lineHeight": 1,
+                            "padding": {
+                              "top": 0,
+                              "bottom": 0,
+                              "left": 0,
+                              "right": 0
+                            },
+                            "border": {
+                              "top": null,
+                              "bottom": null,
+                              "left": null,
+                              "right": null
+                            },
+                            "backgroundColor": null
+                          },
+                          "align": {
+                            "horizontal": "left",
+                            "vertical": "top"
+                          },
+                          "position": {
+                            "x": 0,
+                            "y": 0,
+                            "position": "top-left"
+                          }
+                        },
+                        "content": {
+                          "type": "TextLayer",
+                          "priority": 0,
+                          "spec": {
+                            "shape": {
+                              "width": 320,
+                              "height": 40,
+                              "autoWidth": false,
+                              "autoHeight": false,
+                              "lineHeight": 1,
+                              "padding": {
+                                "top": 0,
+                                "bottom": 0,
+                                "left": 0,
+                                "right": 0
+                              },
+                              "border": {
+                                "top": null,
+                                "bottom": null,
+                                "left": null,
+                                "right": null
+                              },
+                              "backgroundColor": null
+                            },
+                            "align": {
+                              "horizontal": "left",
+                              "vertical": "top"
+                            },
+                            "position": {
+                              "x": 0,
+                              "y": 0,
+                              "position": "top-left"
+                            },
+                            "fontFamily": {
+                              "font": "",
+                              "fontSize": 20,
+                              "fontColor": "#000000",
+                              "angle": 0,
+                              "autowrap": true
+                            }
+                          },
+                          "data": {
+                            "valueType": "StaticValue",
+                            "expression": "",
+                            "value": "第一行内容\n第二行内容"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "canvas": {
+              "width": 320,
+              "height": 250
+            },
+            "layers": [
+              {
+                "type": "TableLayer",
+                "priority": 0,
+                "spec": {
+                  "shape": {
+                    "width": 320,
+                    "height": 400,
+                    "autoWidth": false,
+                    "autoHeight": false,
+                    "lineHeight": 1,
+                    "padding": {
+                      "top": 0,
+                      "bottom": 0,
+                      "left": 0,
+                      "right": 0
+                    },
+                    "border": {
+                      "top": null,
+                      "bottom": null,
+                      "left": null,
+                      "right": null
+                    },
+                    "backgroundColor": "#fff"
+                  },
+                  "align": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  },
+                  "position": {
+                    "x": 0,
+                    "y": 50,
+                    "position": "top-left"
+                  }
+                },
+                "rows": [
+                  {
+                    "type": "TableRowLayer",
+                    "priority": 0,
+                    "spec": {
+                      "shape": {
+                        "width": 320,
+                        "height": 40,
+                        "autoWidth": false,
+                        "autoHeight": false,
+                        "lineHeight": 1,
+                        "padding": {
+                          "top": 0,
+                          "bottom": 0,
+                          "left": 0,
+                          "right": 0
+                        },
+                        "border": {
+                          "top": null,
+                          "bottom": null,
+                          "left": null,
+                          "right": null
+                        },
+                        "backgroundColor": null
+                      },
+                      "align": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "position": "top-left"
+                      }
+                    },
+                    "cells": [
+                      {
+                        "type": "TableCellLayer",
+                        "priority": 0,
+                        "spec": {
+                          "shape": {
+                            "width": 320,
+                            "height": 40,
+                            "autoWidth": false,
+                            "autoHeight": false,
+                            "lineHeight": 1,
+                            "padding": {
+                              "top": 0,
+                              "bottom": 0,
+                              "left": 0,
+                              "right": 0
+                            },
+                            "border": {
+                              "top": null,
+                              "bottom": null,
+                              "left": null,
+                              "right": null
+                            },
+                            "backgroundColor": null
+                          },
+                          "align": {
+                            "horizontal": "left",
+                            "vertical": "top"
+                          },
+                          "position": {
+                            "x": 0,
+                            "y": 0,
+                            "position": "top-left"
+                          }
+                        },
+                        "content": {
+                          "type": "TextLayer",
+                          "priority": 0,
+                          "spec": {
+                            "shape": {
+                              "width": 320,
+                              "height": 40,
+                              "autoWidth": false,
+                              "autoHeight": false,
+                              "lineHeight": 1,
+                              "padding": {
+                                "top": 0,
+                                "bottom": 0,
+                                "left": 0,
+                                "right": 0
+                              },
+                              "border": {
+                                "top": null,
+                                "bottom": null,
+                                "left": null,
+                                "right": null
+                              },
+                              "backgroundColor": null
+                            },
+                            "align": {
+                              "horizontal": "left",
+                              "vertical": "top"
+                            },
+                            "position": {
+                              "x": 0,
+                              "y": 0,
+                              "position": "top-left"
+                            },
+                            "fontFamily": {
+                              "font": "",
+                              "fontSize": 20,
+                              "fontColor": "#000000",
+                              "angle": 0,
+                              "autowrap": true
+                            }
+                          },
+                          "data": {
+                            "valueType": "StaticValue",
+                            "expression": "",
+                            "value": "第三行内容\n第四行内容"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "split-lines-mixed-cells-empty-continuation",
+      "description": "混合格拆分(工票 04 决策 2):一行 3 格(1+2+5 内容行)遇剩余 40 → K=2;短格全内容留前段、续段 = 空串内容格且格盒画满续行高;长格余段顶对齐续排;两片段各格独立边框盒(格盒高 = 片段行高)",
+      "graph": {
+        "canvas": {
+          "width": 320,
+          "height": 450
+        },
+        "layers": [
+          {
+            "type": "TableLayer",
+            "priority": 0,
+            "spec": {
+              "shape": {
+                "width": 320,
+                "height": 400,
+                "autoWidth": false,
+                "autoHeight": false,
+                "lineHeight": 1,
+                "padding": {
+                  "top": 0,
+                  "bottom": 0,
+                  "left": 0,
+                  "right": 0
+                },
+                "border": {
+                  "top": null,
+                  "bottom": null,
+                  "left": null,
+                  "right": null
+                },
+                "backgroundColor": "#fff"
+              },
+              "align": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "position": {
+                "x": 0,
+                "y": 50,
+                "position": "top-left"
+              }
+            },
+            "rows": [
+              {
+                "type": "TableRowLayer",
+                "priority": 0,
+                "spec": {
+                  "shape": {
+                    "width": 320,
+                    "height": 160,
+                    "autoWidth": false,
+                    "autoHeight": false,
+                    "lineHeight": 1,
+                    "padding": {
+                      "top": 0,
+                      "bottom": 0,
+                      "left": 0,
+                      "right": 0
+                    },
+                    "border": {
+                      "top": null,
+                      "bottom": null,
+                      "left": null,
+                      "right": null
+                    },
+                    "backgroundColor": null
+                  },
+                  "align": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  },
+                  "position": {
+                    "x": 0,
+                    "y": 0,
+                    "position": "top-left"
+                  }
+                },
+                "cells": [
+                  {
+                    "type": "TableCellLayer",
+                    "priority": 0,
+                    "spec": {
+                      "shape": {
+                        "width": 320,
+                        "height": 160,
+                        "autoWidth": false,
+                        "autoHeight": false,
+                        "lineHeight": 1,
+                        "padding": {
+                          "top": 0,
+                          "bottom": 0,
+                          "left": 0,
+                          "right": 0
+                        },
+                        "border": {
+                          "top": null,
+                          "bottom": null,
+                          "left": null,
+                          "right": null
+                        },
+                        "backgroundColor": null
+                      },
+                      "align": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "position": "top-left"
+                      }
+                    },
+                    "content": {
+                      "type": "TextLayer",
+                      "priority": 0,
+                      "spec": {
+                        "shape": {
+                          "width": 320,
+                          "height": 160,
+                          "autoWidth": false,
+                          "autoHeight": false,
+                          "lineHeight": 1,
+                          "padding": {
+                            "top": 0,
+                            "bottom": 0,
+                            "left": 0,
+                            "right": 0
+                          },
+                          "border": {
+                            "top": null,
+                            "bottom": null,
+                            "left": null,
+                            "right": null
+                          },
+                          "backgroundColor": null
+                        },
+                        "align": {
+                          "horizontal": "left",
+                          "vertical": "top"
+                        },
+                        "position": {
+                          "x": 0,
+                          "y": 0,
+                          "position": "top-left"
+                        },
+                        "fontFamily": {
+                          "font": "",
+                          "fontSize": 20,
+                          "fontColor": "#000000",
+                          "angle": 0,
+                          "autowrap": false
+                        }
+                      },
+                      "data": {
+                        "valueType": "StaticValue",
+                        "expression": "",
+                        "value": "前置行"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "TableRowLayer",
+                "priority": 0,
+                "spec": {
+                  "shape": {
+                    "width": 320,
+                    "height": 100,
+                    "autoWidth": false,
+                    "autoHeight": false,
+                    "lineHeight": 1,
+                    "padding": {
+                      "top": 0,
+                      "bottom": 0,
+                      "left": 0,
+                      "right": 0
+                    },
+                    "border": {
+                      "top": null,
+                      "bottom": null,
+                      "left": null,
+                      "right": null
+                    },
+                    "backgroundColor": null
+                  },
+                  "align": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  },
+                  "position": {
+                    "x": 0,
+                    "y": 0,
+                    "position": "top-left"
+                  }
+                },
+                "cells": [
+                  {
+                    "type": "TableCellLayer",
+                    "priority": 0,
+                    "spec": {
+                      "shape": {
+                        "width": 100,
+                        "height": 20,
+                        "autoWidth": false,
+                        "autoHeight": false,
+                        "lineHeight": 1,
+                        "padding": {
+                          "top": 0,
+                          "bottom": 0,
+                          "left": 0,
+                          "right": 0
+                        },
+                        "border": {
+                          "top": null,
+                          "bottom": null,
+                          "left": null,
+                          "right": null
+                        },
+                        "backgroundColor": null
+                      },
+                      "align": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "position": "top-left"
+                      }
+                    },
+                    "content": {
+                      "type": "TextLayer",
+                      "priority": 0,
+                      "spec": {
+                        "shape": {
+                          "width": 320,
+                          "height": 20,
+                          "autoWidth": false,
+                          "autoHeight": false,
+                          "lineHeight": 1,
+                          "padding": {
+                            "top": 0,
+                            "bottom": 0,
+                            "left": 0,
+                            "right": 0
+                          },
+                          "border": {
+                            "top": null,
+                            "bottom": null,
+                            "left": null,
+                            "right": null
+                          },
+                          "backgroundColor": null
+                        },
+                        "align": {
+                          "horizontal": "left",
+                          "vertical": "top"
+                        },
+                        "position": {
+                          "x": 0,
+                          "y": 0,
+                          "position": "top-left"
+                        },
+                        "fontFamily": {
+                          "font": "",
+                          "fontSize": 20,
+                          "fontColor": "#000000",
+                          "angle": 0,
+                          "autowrap": true
+                        }
+                      },
+                      "data": {
+                        "valueType": "StaticValue",
+                        "expression": "",
+                        "value": "短甲内容"
+                      }
+                    }
+                  },
+                  {
+                    "type": "TableCellLayer",
+                    "priority": 0,
+                    "spec": {
+                      "shape": {
+                        "width": 120,
+                        "height": 40,
+                        "autoWidth": false,
+                        "autoHeight": false,
+                        "lineHeight": 1,
+                        "padding": {
+                          "top": 0,
+                          "bottom": 0,
+                          "left": 0,
+                          "right": 0
+                        },
+                        "border": {
+                          "top": null,
+                          "bottom": null,
+                          "left": null,
+                          "right": null
+                        },
+                        "backgroundColor": null
+                      },
+                      "align": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "position": "top-left"
+                      }
+                    },
+                    "content": {
+                      "type": "TextLayer",
+                      "priority": 0,
+                      "spec": {
+                        "shape": {
+                          "width": 320,
+                          "height": 40,
+                          "autoWidth": false,
+                          "autoHeight": false,
+                          "lineHeight": 1,
+                          "padding": {
+                            "top": 0,
+                            "bottom": 0,
+                            "left": 0,
+                            "right": 0
+                          },
+                          "border": {
+                            "top": null,
+                            "bottom": null,
+                            "left": null,
+                            "right": null
+                          },
+                          "backgroundColor": null
+                        },
+                        "align": {
+                          "horizontal": "left",
+                          "vertical": "top"
+                        },
+                        "position": {
+                          "x": 0,
+                          "y": 0,
+                          "position": "top-left"
+                        },
+                        "fontFamily": {
+                          "font": "",
+                          "fontSize": 20,
+                          "fontColor": "#000000",
+                          "angle": 0,
+                          "autowrap": true
+                        }
+                      },
+                      "data": {
+                        "valueType": "StaticValue",
+                        "expression": "",
+                        "value": "乙一行内容\n乙二行内容"
+                      }
+                    }
+                  },
+                  {
+                    "type": "TableCellLayer",
+                    "priority": 0,
+                    "spec": {
+                      "shape": {
+                        "width": 100,
+                        "height": 100,
+                        "autoWidth": false,
+                        "autoHeight": false,
+                        "lineHeight": 1,
+                        "padding": {
+                          "top": 0,
+                          "bottom": 0,
+                          "left": 0,
+                          "right": 0
+                        },
+                        "border": {
+                          "top": null,
+                          "bottom": null,
+                          "left": null,
+                          "right": null
+                        },
+                        "backgroundColor": null
+                      },
+                      "align": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "position": "top-left"
+                      }
+                    },
+                    "content": {
+                      "type": "TextLayer",
+                      "priority": 0,
+                      "spec": {
+                        "shape": {
+                          "width": 320,
+                          "height": 100,
+                          "autoWidth": false,
+                          "autoHeight": false,
+                          "lineHeight": 1,
+                          "padding": {
+                            "top": 0,
+                            "bottom": 0,
+                            "left": 0,
+                            "right": 0
+                          },
+                          "border": {
+                            "top": null,
+                            "bottom": null,
+                            "left": null,
+                            "right": null
+                          },
+                          "backgroundColor": null
+                        },
+                        "align": {
+                          "horizontal": "left",
+                          "vertical": "top"
+                        },
+                        "position": {
+                          "x": 0,
+                          "y": 0,
+                          "position": "top-left"
+                        },
+                        "fontFamily": {
+                          "font": "",
+                          "fontSize": 20,
+                          "fontColor": "#000000",
+                          "angle": 0,
+                          "autowrap": true
+                        }
+                      },
+                      "data": {
+                        "valueType": "StaticValue",
+                        "expression": "",
+                        "value": "第一行内容\n第二行内容\n第三行内容\n第四行内容\n第五行内容"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "pageHeight": 250,
+        "split": "lines"
+      },
+      "expect": {
+        "pages": [
+          {
+            "canvas": {
+              "width": 320,
+              "height": 250
+            },
+            "layers": [
+              {
+                "type": "TableLayer",
+                "priority": 0,
+                "spec": {
+                  "shape": {
+                    "width": 320,
+                    "height": 400,
+                    "autoWidth": false,
+                    "autoHeight": false,
+                    "lineHeight": 1,
+                    "padding": {
+                      "top": 0,
+                      "bottom": 0,
+                      "left": 0,
+                      "right": 0
+                    },
+                    "border": {
+                      "top": null,
+                      "bottom": null,
+                      "left": null,
+                      "right": null
+                    },
+                    "backgroundColor": "#fff"
+                  },
+                  "align": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  },
+                  "position": {
+                    "x": 0,
+                    "y": 50,
+                    "position": "top-left"
+                  }
+                },
+                "rows": [
+                  {
+                    "type": "TableRowLayer",
+                    "priority": 0,
+                    "spec": {
+                      "shape": {
+                        "width": 320,
+                        "height": 160,
+                        "autoWidth": false,
+                        "autoHeight": false,
+                        "lineHeight": 1,
+                        "padding": {
+                          "top": 0,
+                          "bottom": 0,
+                          "left": 0,
+                          "right": 0
+                        },
+                        "border": {
+                          "top": null,
+                          "bottom": null,
+                          "left": null,
+                          "right": null
+                        },
+                        "backgroundColor": null
+                      },
+                      "align": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "position": "top-left"
+                      }
+                    },
+                    "cells": [
+                      {
+                        "type": "TableCellLayer",
+                        "priority": 0,
+                        "spec": {
+                          "shape": {
+                            "width": 320,
+                            "height": 160,
+                            "autoWidth": false,
+                            "autoHeight": false,
+                            "lineHeight": 1,
+                            "padding": {
+                              "top": 0,
+                              "bottom": 0,
+                              "left": 0,
+                              "right": 0
+                            },
+                            "border": {
+                              "top": null,
+                              "bottom": null,
+                              "left": null,
+                              "right": null
+                            },
+                            "backgroundColor": null
+                          },
+                          "align": {
+                            "horizontal": "left",
+                            "vertical": "top"
+                          },
+                          "position": {
+                            "x": 0,
+                            "y": 0,
+                            "position": "top-left"
+                          }
+                        },
+                        "content": {
+                          "type": "TextLayer",
+                          "priority": 0,
+                          "spec": {
+                            "shape": {
+                              "width": 320,
+                              "height": 160,
+                              "autoWidth": false,
+                              "autoHeight": false,
+                              "lineHeight": 1,
+                              "padding": {
+                                "top": 0,
+                                "bottom": 0,
+                                "left": 0,
+                                "right": 0
+                              },
+                              "border": {
+                                "top": null,
+                                "bottom": null,
+                                "left": null,
+                                "right": null
+                              },
+                              "backgroundColor": null
+                            },
+                            "align": {
+                              "horizontal": "left",
+                              "vertical": "top"
+                            },
+                            "position": {
+                              "x": 0,
+                              "y": 0,
+                              "position": "top-left"
+                            },
+                            "fontFamily": {
+                              "font": "",
+                              "fontSize": 20,
+                              "fontColor": "#000000",
+                              "angle": 0,
+                              "autowrap": false
+                            }
+                          },
+                          "data": {
+                            "valueType": "StaticValue",
+                            "expression": "",
+                            "value": "前置行"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "TableRowLayer",
+                    "priority": 0,
+                    "spec": {
+                      "shape": {
+                        "width": 320,
+                        "height": 40,
+                        "autoWidth": false,
+                        "autoHeight": false,
+                        "lineHeight": 1,
+                        "padding": {
+                          "top": 0,
+                          "bottom": 0,
+                          "left": 0,
+                          "right": 0
+                        },
+                        "border": {
+                          "top": null,
+                          "bottom": null,
+                          "left": null,
+                          "right": null
+                        },
+                        "backgroundColor": null
+                      },
+                      "align": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "position": "top-left"
+                      }
+                    },
+                    "cells": [
+                      {
+                        "type": "TableCellLayer",
+                        "priority": 0,
+                        "spec": {
+                          "shape": {
+                            "width": 100,
+                            "height": 40,
+                            "autoWidth": false,
+                            "autoHeight": false,
+                            "lineHeight": 1,
+                            "padding": {
+                              "top": 0,
+                              "bottom": 0,
+                              "left": 0,
+                              "right": 0
+                            },
+                            "border": {
+                              "top": null,
+                              "bottom": null,
+                              "left": null,
+                              "right": null
+                            },
+                            "backgroundColor": null
+                          },
+                          "align": {
+                            "horizontal": "left",
+                            "vertical": "top"
+                          },
+                          "position": {
+                            "x": 0,
+                            "y": 0,
+                            "position": "top-left"
+                          }
+                        },
+                        "content": {
+                          "type": "TextLayer",
+                          "priority": 0,
+                          "spec": {
+                            "shape": {
+                              "width": 320,
+                              "height": 40,
+                              "autoWidth": false,
+                              "autoHeight": false,
+                              "lineHeight": 1,
+                              "padding": {
+                                "top": 0,
+                                "bottom": 0,
+                                "left": 0,
+                                "right": 0
+                              },
+                              "border": {
+                                "top": null,
+                                "bottom": null,
+                                "left": null,
+                                "right": null
+                              },
+                              "backgroundColor": null
+                            },
+                            "align": {
+                              "horizontal": "left",
+                              "vertical": "top"
+                            },
+                            "position": {
+                              "x": 0,
+                              "y": 0,
+                              "position": "top-left"
+                            },
+                            "fontFamily": {
+                              "font": "",
+                              "fontSize": 20,
+                              "fontColor": "#000000",
+                              "angle": 0,
+                              "autowrap": true
+                            }
+                          },
+                          "data": {
+                            "valueType": "StaticValue",
+                            "expression": "",
+                            "value": "短甲内容"
+                          }
+                        }
+                      },
+                      {
+                        "type": "TableCellLayer",
+                        "priority": 0,
+                        "spec": {
+                          "shape": {
+                            "width": 120,
+                            "height": 40,
+                            "autoWidth": false,
+                            "autoHeight": false,
+                            "lineHeight": 1,
+                            "padding": {
+                              "top": 0,
+                              "bottom": 0,
+                              "left": 0,
+                              "right": 0
+                            },
+                            "border": {
+                              "top": null,
+                              "bottom": null,
+                              "left": null,
+                              "right": null
+                            },
+                            "backgroundColor": null
+                          },
+                          "align": {
+                            "horizontal": "left",
+                            "vertical": "top"
+                          },
+                          "position": {
+                            "x": 0,
+                            "y": 0,
+                            "position": "top-left"
+                          }
+                        },
+                        "content": {
+                          "type": "TextLayer",
+                          "priority": 0,
+                          "spec": {
+                            "shape": {
+                              "width": 320,
+                              "height": 40,
+                              "autoWidth": false,
+                              "autoHeight": false,
+                              "lineHeight": 1,
+                              "padding": {
+                                "top": 0,
+                                "bottom": 0,
+                                "left": 0,
+                                "right": 0
+                              },
+                              "border": {
+                                "top": null,
+                                "bottom": null,
+                                "left": null,
+                                "right": null
+                              },
+                              "backgroundColor": null
+                            },
+                            "align": {
+                              "horizontal": "left",
+                              "vertical": "top"
+                            },
+                            "position": {
+                              "x": 0,
+                              "y": 0,
+                              "position": "top-left"
+                            },
+                            "fontFamily": {
+                              "font": "",
+                              "fontSize": 20,
+                              "fontColor": "#000000",
+                              "angle": 0,
+                              "autowrap": true
+                            }
+                          },
+                          "data": {
+                            "valueType": "StaticValue",
+                            "expression": "",
+                            "value": "乙一行内容\n乙二行内容"
+                          }
+                        }
+                      },
+                      {
+                        "type": "TableCellLayer",
+                        "priority": 0,
+                        "spec": {
+                          "shape": {
+                            "width": 100,
+                            "height": 40,
+                            "autoWidth": false,
+                            "autoHeight": false,
+                            "lineHeight": 1,
+                            "padding": {
+                              "top": 0,
+                              "bottom": 0,
+                              "left": 0,
+                              "right": 0
+                            },
+                            "border": {
+                              "top": null,
+                              "bottom": null,
+                              "left": null,
+                              "right": null
+                            },
+                            "backgroundColor": null
+                          },
+                          "align": {
+                            "horizontal": "left",
+                            "vertical": "top"
+                          },
+                          "position": {
+                            "x": 0,
+                            "y": 0,
+                            "position": "top-left"
+                          }
+                        },
+                        "content": {
+                          "type": "TextLayer",
+                          "priority": 0,
+                          "spec": {
+                            "shape": {
+                              "width": 320,
+                              "height": 40,
+                              "autoWidth": false,
+                              "autoHeight": false,
+                              "lineHeight": 1,
+                              "padding": {
+                                "top": 0,
+                                "bottom": 0,
+                                "left": 0,
+                                "right": 0
+                              },
+                              "border": {
+                                "top": null,
+                                "bottom": null,
+                                "left": null,
+                                "right": null
+                              },
+                              "backgroundColor": null
+                            },
+                            "align": {
+                              "horizontal": "left",
+                              "vertical": "top"
+                            },
+                            "position": {
+                              "x": 0,
+                              "y": 0,
+                              "position": "top-left"
+                            },
+                            "fontFamily": {
+                              "font": "",
+                              "fontSize": 20,
+                              "fontColor": "#000000",
+                              "angle": 0,
+                              "autowrap": true
+                            }
+                          },
+                          "data": {
+                            "valueType": "StaticValue",
+                            "expression": "",
+                            "value": "第一行内容\n第二行内容"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "canvas": {
+              "width": 320,
+              "height": 250
+            },
+            "layers": [
+              {
+                "type": "TableLayer",
+                "priority": 0,
+                "spec": {
+                  "shape": {
+                    "width": 320,
+                    "height": 400,
+                    "autoWidth": false,
+                    "autoHeight": false,
+                    "lineHeight": 1,
+                    "padding": {
+                      "top": 0,
+                      "bottom": 0,
+                      "left": 0,
+                      "right": 0
+                    },
+                    "border": {
+                      "top": null,
+                      "bottom": null,
+                      "left": null,
+                      "right": null
+                    },
+                    "backgroundColor": "#fff"
+                  },
+                  "align": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  },
+                  "position": {
+                    "x": 0,
+                    "y": 50,
+                    "position": "top-left"
+                  }
+                },
+                "rows": [
+                  {
+                    "type": "TableRowLayer",
+                    "priority": 0,
+                    "spec": {
+                      "shape": {
+                        "width": 320,
+                        "height": 60,
+                        "autoWidth": false,
+                        "autoHeight": false,
+                        "lineHeight": 1,
+                        "padding": {
+                          "top": 0,
+                          "bottom": 0,
+                          "left": 0,
+                          "right": 0
+                        },
+                        "border": {
+                          "top": null,
+                          "bottom": null,
+                          "left": null,
+                          "right": null
+                        },
+                        "backgroundColor": null
+                      },
+                      "align": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "position": "top-left"
+                      }
+                    },
+                    "cells": [
+                      {
+                        "type": "TableCellLayer",
+                        "priority": 0,
+                        "spec": {
+                          "shape": {
+                            "width": 100,
+                            "height": 60,
+                            "autoWidth": false,
+                            "autoHeight": false,
+                            "lineHeight": 1,
+                            "padding": {
+                              "top": 0,
+                              "bottom": 0,
+                              "left": 0,
+                              "right": 0
+                            },
+                            "border": {
+                              "top": null,
+                              "bottom": null,
+                              "left": null,
+                              "right": null
+                            },
+                            "backgroundColor": null
+                          },
+                          "align": {
+                            "horizontal": "left",
+                            "vertical": "top"
+                          },
+                          "position": {
+                            "x": 0,
+                            "y": 0,
+                            "position": "top-left"
+                          }
+                        },
+                        "content": {
+                          "type": "TextLayer",
+                          "priority": 0,
+                          "spec": {
+                            "shape": {
+                              "width": 320,
+                              "height": 60,
+                              "autoWidth": false,
+                              "autoHeight": false,
+                              "lineHeight": 1,
+                              "padding": {
+                                "top": 0,
+                                "bottom": 0,
+                                "left": 0,
+                                "right": 0
+                              },
+                              "border": {
+                                "top": null,
+                                "bottom": null,
+                                "left": null,
+                                "right": null
+                              },
+                              "backgroundColor": null
+                            },
+                            "align": {
+                              "horizontal": "left",
+                              "vertical": "top"
+                            },
+                            "position": {
+                              "x": 0,
+                              "y": 0,
+                              "position": "top-left"
+                            },
+                            "fontFamily": {
+                              "font": "",
+                              "fontSize": 20,
+                              "fontColor": "#000000",
+                              "angle": 0,
+                              "autowrap": true
+                            }
+                          },
+                          "data": {
+                            "valueType": "StaticValue",
+                            "expression": "",
+                            "value": ""
+                          }
+                        }
+                      },
+                      {
+                        "type": "TableCellLayer",
+                        "priority": 0,
+                        "spec": {
+                          "shape": {
+                            "width": 120,
+                            "height": 60,
+                            "autoWidth": false,
+                            "autoHeight": false,
+                            "lineHeight": 1,
+                            "padding": {
+                              "top": 0,
+                              "bottom": 0,
+                              "left": 0,
+                              "right": 0
+                            },
+                            "border": {
+                              "top": null,
+                              "bottom": null,
+                              "left": null,
+                              "right": null
+                            },
+                            "backgroundColor": null
+                          },
+                          "align": {
+                            "horizontal": "left",
+                            "vertical": "top"
+                          },
+                          "position": {
+                            "x": 0,
+                            "y": 0,
+                            "position": "top-left"
+                          }
+                        },
+                        "content": {
+                          "type": "TextLayer",
+                          "priority": 0,
+                          "spec": {
+                            "shape": {
+                              "width": 320,
+                              "height": 60,
+                              "autoWidth": false,
+                              "autoHeight": false,
+                              "lineHeight": 1,
+                              "padding": {
+                                "top": 0,
+                                "bottom": 0,
+                                "left": 0,
+                                "right": 0
+                              },
+                              "border": {
+                                "top": null,
+                                "bottom": null,
+                                "left": null,
+                                "right": null
+                              },
+                              "backgroundColor": null
+                            },
+                            "align": {
+                              "horizontal": "left",
+                              "vertical": "top"
+                            },
+                            "position": {
+                              "x": 0,
+                              "y": 0,
+                              "position": "top-left"
+                            },
+                            "fontFamily": {
+                              "font": "",
+                              "fontSize": 20,
+                              "fontColor": "#000000",
+                              "angle": 0,
+                              "autowrap": true
+                            }
+                          },
+                          "data": {
+                            "valueType": "StaticValue",
+                            "expression": "",
+                            "value": ""
+                          }
+                        }
+                      },
+                      {
+                        "type": "TableCellLayer",
+                        "priority": 0,
+                        "spec": {
+                          "shape": {
+                            "width": 100,
+                            "height": 60,
+                            "autoWidth": false,
+                            "autoHeight": false,
+                            "lineHeight": 1,
+                            "padding": {
+                              "top": 0,
+                              "bottom": 0,
+                              "left": 0,
+                              "right": 0
+                            },
+                            "border": {
+                              "top": null,
+                              "bottom": null,
+                              "left": null,
+                              "right": null
+                            },
+                            "backgroundColor": null
+                          },
+                          "align": {
+                            "horizontal": "left",
+                            "vertical": "top"
+                          },
+                          "position": {
+                            "x": 0,
+                            "y": 0,
+                            "position": "top-left"
+                          }
+                        },
+                        "content": {
+                          "type": "TextLayer",
+                          "priority": 0,
+                          "spec": {
+                            "shape": {
+                              "width": 320,
+                              "height": 60,
+                              "autoWidth": false,
+                              "autoHeight": false,
+                              "lineHeight": 1,
+                              "padding": {
+                                "top": 0,
+                                "bottom": 0,
+                                "left": 0,
+                                "right": 0
+                              },
+                              "border": {
+                                "top": null,
+                                "bottom": null,
+                                "left": null,
+                                "right": null
+                              },
+                              "backgroundColor": null
+                            },
+                            "align": {
+                              "horizontal": "left",
+                              "vertical": "top"
+                            },
+                            "position": {
+                              "x": 0,
+                              "y": 0,
+                              "position": "top-left"
+                            },
+                            "fontFamily": {
+                              "font": "",
+                              "fontSize": 20,
+                              "fontColor": "#000000",
+                              "angle": 0,
+                              "autowrap": true
+                            }
+                          },
+                          "data": {
+                            "valueType": "StaticValue",
+                            "expression": "",
+                            "value": "第三行内容\n第四行内容\n第五行内容"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "split-lines-monolithic-row-atomic-move",
+      "description": "单体格行不拆(工票 04 决策 3):含图片格的行高 100 > 剩余 40 → 整行移下页,不拆不报错;拆分模式与原子模式同果(对照用例,钉拆分不误伤单体行)",
+      "graph": {
+        "canvas": {
+          "width": 320,
+          "height": 450
+        },
+        "layers": [
+          {
+            "type": "TableLayer",
+            "priority": 0,
+            "spec": {
+              "shape": {
+                "width": 320,
+                "height": 400,
+                "autoWidth": false,
+                "autoHeight": false,
+                "lineHeight": 1,
+                "padding": {
+                  "top": 0,
+                  "bottom": 0,
+                  "left": 0,
+                  "right": 0
+                },
+                "border": {
+                  "top": null,
+                  "bottom": null,
+                  "left": null,
+                  "right": null
+                },
+                "backgroundColor": "#fff"
+              },
+              "align": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "position": {
+                "x": 0,
+                "y": 50,
+                "position": "top-left"
+              }
+            },
+            "rows": [
+              {
+                "type": "TableRowLayer",
+                "priority": 0,
+                "spec": {
+                  "shape": {
+                    "width": 320,
+                    "height": 160,
+                    "autoWidth": false,
+                    "autoHeight": false,
+                    "lineHeight": 1,
+                    "padding": {
+                      "top": 0,
+                      "bottom": 0,
+                      "left": 0,
+                      "right": 0
+                    },
+                    "border": {
+                      "top": null,
+                      "bottom": null,
+                      "left": null,
+                      "right": null
+                    },
+                    "backgroundColor": null
+                  },
+                  "align": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  },
+                  "position": {
+                    "x": 0,
+                    "y": 0,
+                    "position": "top-left"
+                  }
+                },
+                "cells": [
+                  {
+                    "type": "TableCellLayer",
+                    "priority": 0,
+                    "spec": {
+                      "shape": {
+                        "width": 320,
+                        "height": 160,
+                        "autoWidth": false,
+                        "autoHeight": false,
+                        "lineHeight": 1,
+                        "padding": {
+                          "top": 0,
+                          "bottom": 0,
+                          "left": 0,
+                          "right": 0
+                        },
+                        "border": {
+                          "top": null,
+                          "bottom": null,
+                          "left": null,
+                          "right": null
+                        },
+                        "backgroundColor": null
+                      },
+                      "align": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "position": "top-left"
+                      }
+                    },
+                    "content": {
+                      "type": "TextLayer",
+                      "priority": 0,
+                      "spec": {
+                        "shape": {
+                          "width": 320,
+                          "height": 160,
+                          "autoWidth": false,
+                          "autoHeight": false,
+                          "lineHeight": 1,
+                          "padding": {
+                            "top": 0,
+                            "bottom": 0,
+                            "left": 0,
+                            "right": 0
+                          },
+                          "border": {
+                            "top": null,
+                            "bottom": null,
+                            "left": null,
+                            "right": null
+                          },
+                          "backgroundColor": null
+                        },
+                        "align": {
+                          "horizontal": "left",
+                          "vertical": "top"
+                        },
+                        "position": {
+                          "x": 0,
+                          "y": 0,
+                          "position": "top-left"
+                        },
+                        "fontFamily": {
+                          "font": "",
+                          "fontSize": 20,
+                          "fontColor": "#000000",
+                          "angle": 0,
+                          "autowrap": false
+                        }
+                      },
+                      "data": {
+                        "valueType": "StaticValue",
+                        "expression": "",
+                        "value": "前置行"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "TableRowLayer",
+                "priority": 0,
+                "spec": {
+                  "shape": {
+                    "width": 320,
+                    "height": 100,
+                    "autoWidth": false,
+                    "autoHeight": false,
+                    "lineHeight": 1,
+                    "padding": {
+                      "top": 0,
+                      "bottom": 0,
+                      "left": 0,
+                      "right": 0
+                    },
+                    "border": {
+                      "top": null,
+                      "bottom": null,
+                      "left": null,
+                      "right": null
+                    },
+                    "backgroundColor": null
+                  },
+                  "align": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  },
+                  "position": {
+                    "x": 0,
+                    "y": 0,
+                    "position": "top-left"
+                  }
+                },
+                "cells": [
+                  {
+                    "type": "TableCellLayer",
+                    "priority": 0,
+                    "spec": {
+                      "shape": {
+                        "width": 320,
+                        "height": 100,
+                        "autoWidth": false,
+                        "autoHeight": false,
+                        "lineHeight": 1,
+                        "padding": {
+                          "top": 0,
+                          "bottom": 0,
+                          "left": 0,
+                          "right": 0
+                        },
+                        "border": {
+                          "top": null,
+                          "bottom": null,
+                          "left": null,
+                          "right": null
+                        },
+                        "backgroundColor": null
+                      },
+                      "align": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "position": "top-left"
+                      }
+                    },
+                    "content": {
+                      "type": "ImageLayer",
+                      "priority": 0,
+                      "spec": {
+                        "shape": {
+                          "width": 320,
+                          "height": 100,
+                          "autoWidth": false,
+                          "autoHeight": false,
+                          "lineHeight": 1,
+                          "padding": {
+                            "top": 0,
+                            "bottom": 0,
+                            "left": 0,
+                            "right": 0
+                          },
+                          "border": {
+                            "top": null,
+                            "bottom": null,
+                            "left": null,
+                            "right": null
+                          },
+                          "backgroundColor": null
+                        },
+                        "align": {
+                          "horizontal": "left",
+                          "vertical": "top"
+                        },
+                        "position": {
+                          "x": 0,
+                          "y": 0,
+                          "position": "top-left"
+                        }
+                      },
+                      "data": {
+                        "valueType": "StaticValue",
+                        "value": "/img/cert-seal.png"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "pageHeight": 250,
+        "split": "lines"
+      },
+      "expect": {
+        "pages": [
+          {
+            "canvas": {
+              "width": 320,
+              "height": 250
+            },
+            "layers": [
+              {
+                "type": "TableLayer",
+                "priority": 0,
+                "spec": {
+                  "shape": {
+                    "width": 320,
+                    "height": 400,
+                    "autoWidth": false,
+                    "autoHeight": false,
+                    "lineHeight": 1,
+                    "padding": {
+                      "top": 0,
+                      "bottom": 0,
+                      "left": 0,
+                      "right": 0
+                    },
+                    "border": {
+                      "top": null,
+                      "bottom": null,
+                      "left": null,
+                      "right": null
+                    },
+                    "backgroundColor": "#fff"
+                  },
+                  "align": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  },
+                  "position": {
+                    "x": 0,
+                    "y": 50,
+                    "position": "top-left"
+                  }
+                },
+                "rows": [
+                  {
+                    "type": "TableRowLayer",
+                    "priority": 0,
+                    "spec": {
+                      "shape": {
+                        "width": 320,
+                        "height": 160,
+                        "autoWidth": false,
+                        "autoHeight": false,
+                        "lineHeight": 1,
+                        "padding": {
+                          "top": 0,
+                          "bottom": 0,
+                          "left": 0,
+                          "right": 0
+                        },
+                        "border": {
+                          "top": null,
+                          "bottom": null,
+                          "left": null,
+                          "right": null
+                        },
+                        "backgroundColor": null
+                      },
+                      "align": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "position": "top-left"
+                      }
+                    },
+                    "cells": [
+                      {
+                        "type": "TableCellLayer",
+                        "priority": 0,
+                        "spec": {
+                          "shape": {
+                            "width": 320,
+                            "height": 160,
+                            "autoWidth": false,
+                            "autoHeight": false,
+                            "lineHeight": 1,
+                            "padding": {
+                              "top": 0,
+                              "bottom": 0,
+                              "left": 0,
+                              "right": 0
+                            },
+                            "border": {
+                              "top": null,
+                              "bottom": null,
+                              "left": null,
+                              "right": null
+                            },
+                            "backgroundColor": null
+                          },
+                          "align": {
+                            "horizontal": "left",
+                            "vertical": "top"
+                          },
+                          "position": {
+                            "x": 0,
+                            "y": 0,
+                            "position": "top-left"
+                          }
+                        },
+                        "content": {
+                          "type": "TextLayer",
+                          "priority": 0,
+                          "spec": {
+                            "shape": {
+                              "width": 320,
+                              "height": 160,
+                              "autoWidth": false,
+                              "autoHeight": false,
+                              "lineHeight": 1,
+                              "padding": {
+                                "top": 0,
+                                "bottom": 0,
+                                "left": 0,
+                                "right": 0
+                              },
+                              "border": {
+                                "top": null,
+                                "bottom": null,
+                                "left": null,
+                                "right": null
+                              },
+                              "backgroundColor": null
+                            },
+                            "align": {
+                              "horizontal": "left",
+                              "vertical": "top"
+                            },
+                            "position": {
+                              "x": 0,
+                              "y": 0,
+                              "position": "top-left"
+                            },
+                            "fontFamily": {
+                              "font": "",
+                              "fontSize": 20,
+                              "fontColor": "#000000",
+                              "angle": 0,
+                              "autowrap": false
+                            }
+                          },
+                          "data": {
+                            "valueType": "StaticValue",
+                            "expression": "",
+                            "value": "前置行"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "canvas": {
+              "width": 320,
+              "height": 250
+            },
+            "layers": [
+              {
+                "type": "TableLayer",
+                "priority": 0,
+                "spec": {
+                  "shape": {
+                    "width": 320,
+                    "height": 400,
+                    "autoWidth": false,
+                    "autoHeight": false,
+                    "lineHeight": 1,
+                    "padding": {
+                      "top": 0,
+                      "bottom": 0,
+                      "left": 0,
+                      "right": 0
+                    },
+                    "border": {
+                      "top": null,
+                      "bottom": null,
+                      "left": null,
+                      "right": null
+                    },
+                    "backgroundColor": "#fff"
+                  },
+                  "align": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  },
+                  "position": {
+                    "x": 0,
+                    "y": 50,
+                    "position": "top-left"
+                  }
+                },
+                "rows": [
+                  {
+                    "type": "TableRowLayer",
+                    "priority": 0,
+                    "spec": {
+                      "shape": {
+                        "width": 320,
+                        "height": 100,
+                        "autoWidth": false,
+                        "autoHeight": false,
+                        "lineHeight": 1,
+                        "padding": {
+                          "top": 0,
+                          "bottom": 0,
+                          "left": 0,
+                          "right": 0
+                        },
+                        "border": {
+                          "top": null,
+                          "bottom": null,
+                          "left": null,
+                          "right": null
+                        },
+                        "backgroundColor": null
+                      },
+                      "align": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "position": "top-left"
+                      }
+                    },
+                    "cells": [
+                      {
+                        "type": "TableCellLayer",
+                        "priority": 0,
+                        "spec": {
+                          "shape": {
+                            "width": 320,
+                            "height": 100,
+                            "autoWidth": false,
+                            "autoHeight": false,
+                            "lineHeight": 1,
+                            "padding": {
+                              "top": 0,
+                              "bottom": 0,
+                              "left": 0,
+                              "right": 0
+                            },
+                            "border": {
+                              "top": null,
+                              "bottom": null,
+                              "left": null,
+                              "right": null
+                            },
+                            "backgroundColor": null
+                          },
+                          "align": {
+                            "horizontal": "left",
+                            "vertical": "top"
+                          },
+                          "position": {
+                            "x": 0,
+                            "y": 0,
+                            "position": "top-left"
+                          }
+                        },
+                        "content": {
+                          "type": "ImageLayer",
+                          "priority": 0,
+                          "spec": {
+                            "shape": {
+                              "width": 320,
+                              "height": 100,
+                              "autoWidth": false,
+                              "autoHeight": false,
+                              "lineHeight": 1,
+                              "padding": {
+                                "top": 0,
+                                "bottom": 0,
+                                "left": 0,
+                                "right": 0
+                              },
+                              "border": {
+                                "top": null,
+                                "bottom": null,
+                                "left": null,
+                                "right": null
+                              },
+                              "backgroundColor": null
+                            },
+                            "align": {
+                              "horizontal": "left",
+                              "vertical": "top"
+                            },
+                            "position": {
+                              "x": 0,
+                              "y": 0,
+                              "position": "top-left"
+                            }
+                          },
+                          "data": {
+                            "valueType": "StaticValue",
+                            "value": "/img/cert-seal.png"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "split-lines-row-across-three-pages",
+      "description": "超整页可拆行多次拆分:行高 480(24 内容行)> 可用区 200 → K=10 拆出满页前段,片段重入装箱再拆 → 页序列 [200][200][80];拆分过程行序单调前进、必然收敛",
+      "graph": {
+        "canvas": {
+          "width": 320,
+          "height": 450
+        },
+        "layers": [
+          {
+            "type": "TableLayer",
+            "priority": 0,
+            "spec": {
+              "shape": {
+                "width": 320,
+                "height": 400,
+                "autoWidth": false,
+                "autoHeight": false,
+                "lineHeight": 1,
+                "padding": {
+                  "top": 0,
+                  "bottom": 0,
+                  "left": 0,
+                  "right": 0
+                },
+                "border": {
+                  "top": null,
+                  "bottom": null,
+                  "left": null,
+                  "right": null
+                },
+                "backgroundColor": "#fff"
+              },
+              "align": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "position": {
+                "x": 0,
+                "y": 50,
+                "position": "top-left"
+              }
+            },
+            "rows": [
+              {
+                "type": "TableRowLayer",
+                "priority": 0,
+                "spec": {
+                  "shape": {
+                    "width": 320,
+                    "height": 480,
+                    "autoWidth": false,
+                    "autoHeight": false,
+                    "lineHeight": 1,
+                    "padding": {
+                      "top": 0,
+                      "bottom": 0,
+                      "left": 0,
+                      "right": 0
+                    },
+                    "border": {
+                      "top": null,
+                      "bottom": null,
+                      "left": null,
+                      "right": null
+                    },
+                    "backgroundColor": null
+                  },
+                  "align": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  },
+                  "position": {
+                    "x": 0,
+                    "y": 0,
+                    "position": "top-left"
+                  }
+                },
+                "cells": [
+                  {
+                    "type": "TableCellLayer",
+                    "priority": 0,
+                    "spec": {
+                      "shape": {
+                        "width": 320,
+                        "height": 480,
+                        "autoWidth": false,
+                        "autoHeight": false,
+                        "lineHeight": 1,
+                        "padding": {
+                          "top": 0,
+                          "bottom": 0,
+                          "left": 0,
+                          "right": 0
+                        },
+                        "border": {
+                          "top": null,
+                          "bottom": null,
+                          "left": null,
+                          "right": null
+                        },
+                        "backgroundColor": null
+                      },
+                      "align": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "position": "top-left"
+                      }
+                    },
+                    "content": {
+                      "type": "TextLayer",
+                      "priority": 0,
+                      "spec": {
+                        "shape": {
+                          "width": 320,
+                          "height": 480,
+                          "autoWidth": false,
+                          "autoHeight": false,
+                          "lineHeight": 1,
+                          "padding": {
+                            "top": 0,
+                            "bottom": 0,
+                            "left": 0,
+                            "right": 0
+                          },
+                          "border": {
+                            "top": null,
+                            "bottom": null,
+                            "left": null,
+                            "right": null
+                          },
+                          "backgroundColor": null
+                        },
+                        "align": {
+                          "horizontal": "left",
+                          "vertical": "top"
+                        },
+                        "position": {
+                          "x": 0,
+                          "y": 0,
+                          "position": "top-left"
+                        },
+                        "fontFamily": {
+                          "font": "",
+                          "fontSize": 20,
+                          "fontColor": "#000000",
+                          "angle": 0,
+                          "autowrap": true
+                        }
+                      },
+                      "data": {
+                        "valueType": "StaticValue",
+                        "expression": "",
+                        "value": "第一行内容\n第二行内容\n第三行内容\n第四行内容\n第五行内容\n第六行内容\n第七行内容\n第八行内容\n第九行内容\n第十行内容\n第十一行内容\n第十二行内容\n第十三行内容\n第十四行内容\n第十五行内容\n第十六行内容\n第十七行内容\n第十八行内容\n第十九行内容\n第二十行内容\n第二十一行内容\n第二十二行内容\n第二十三行内容\n第二十四行内容"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "pageHeight": 250,
+        "split": "lines"
+      },
+      "expect": {
+        "pages": [
+          {
+            "canvas": {
+              "width": 320,
+              "height": 250
+            },
+            "layers": [
+              {
+                "type": "TableLayer",
+                "priority": 0,
+                "spec": {
+                  "shape": {
+                    "width": 320,
+                    "height": 400,
+                    "autoWidth": false,
+                    "autoHeight": false,
+                    "lineHeight": 1,
+                    "padding": {
+                      "top": 0,
+                      "bottom": 0,
+                      "left": 0,
+                      "right": 0
+                    },
+                    "border": {
+                      "top": null,
+                      "bottom": null,
+                      "left": null,
+                      "right": null
+                    },
+                    "backgroundColor": "#fff"
+                  },
+                  "align": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  },
+                  "position": {
+                    "x": 0,
+                    "y": 50,
+                    "position": "top-left"
+                  }
+                },
+                "rows": [
+                  {
+                    "type": "TableRowLayer",
+                    "priority": 0,
+                    "spec": {
+                      "shape": {
+                        "width": 320,
+                        "height": 200,
+                        "autoWidth": false,
+                        "autoHeight": false,
+                        "lineHeight": 1,
+                        "padding": {
+                          "top": 0,
+                          "bottom": 0,
+                          "left": 0,
+                          "right": 0
+                        },
+                        "border": {
+                          "top": null,
+                          "bottom": null,
+                          "left": null,
+                          "right": null
+                        },
+                        "backgroundColor": null
+                      },
+                      "align": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "position": "top-left"
+                      }
+                    },
+                    "cells": [
+                      {
+                        "type": "TableCellLayer",
+                        "priority": 0,
+                        "spec": {
+                          "shape": {
+                            "width": 320,
+                            "height": 200,
+                            "autoWidth": false,
+                            "autoHeight": false,
+                            "lineHeight": 1,
+                            "padding": {
+                              "top": 0,
+                              "bottom": 0,
+                              "left": 0,
+                              "right": 0
+                            },
+                            "border": {
+                              "top": null,
+                              "bottom": null,
+                              "left": null,
+                              "right": null
+                            },
+                            "backgroundColor": null
+                          },
+                          "align": {
+                            "horizontal": "left",
+                            "vertical": "top"
+                          },
+                          "position": {
+                            "x": 0,
+                            "y": 0,
+                            "position": "top-left"
+                          }
+                        },
+                        "content": {
+                          "type": "TextLayer",
+                          "priority": 0,
+                          "spec": {
+                            "shape": {
+                              "width": 320,
+                              "height": 200,
+                              "autoWidth": false,
+                              "autoHeight": false,
+                              "lineHeight": 1,
+                              "padding": {
+                                "top": 0,
+                                "bottom": 0,
+                                "left": 0,
+                                "right": 0
+                              },
+                              "border": {
+                                "top": null,
+                                "bottom": null,
+                                "left": null,
+                                "right": null
+                              },
+                              "backgroundColor": null
+                            },
+                            "align": {
+                              "horizontal": "left",
+                              "vertical": "top"
+                            },
+                            "position": {
+                              "x": 0,
+                              "y": 0,
+                              "position": "top-left"
+                            },
+                            "fontFamily": {
+                              "font": "",
+                              "fontSize": 20,
+                              "fontColor": "#000000",
+                              "angle": 0,
+                              "autowrap": true
+                            }
+                          },
+                          "data": {
+                            "valueType": "StaticValue",
+                            "expression": "",
+                            "value": "第一行内容\n第二行内容\n第三行内容\n第四行内容\n第五行内容\n第六行内容\n第七行内容\n第八行内容\n第九行内容\n第十行内容"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "canvas": {
+              "width": 320,
+              "height": 250
+            },
+            "layers": [
+              {
+                "type": "TableLayer",
+                "priority": 0,
+                "spec": {
+                  "shape": {
+                    "width": 320,
+                    "height": 400,
+                    "autoWidth": false,
+                    "autoHeight": false,
+                    "lineHeight": 1,
+                    "padding": {
+                      "top": 0,
+                      "bottom": 0,
+                      "left": 0,
+                      "right": 0
+                    },
+                    "border": {
+                      "top": null,
+                      "bottom": null,
+                      "left": null,
+                      "right": null
+                    },
+                    "backgroundColor": "#fff"
+                  },
+                  "align": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  },
+                  "position": {
+                    "x": 0,
+                    "y": 50,
+                    "position": "top-left"
+                  }
+                },
+                "rows": [
+                  {
+                    "type": "TableRowLayer",
+                    "priority": 0,
+                    "spec": {
+                      "shape": {
+                        "width": 320,
+                        "height": 200,
+                        "autoWidth": false,
+                        "autoHeight": false,
+                        "lineHeight": 1,
+                        "padding": {
+                          "top": 0,
+                          "bottom": 0,
+                          "left": 0,
+                          "right": 0
+                        },
+                        "border": {
+                          "top": null,
+                          "bottom": null,
+                          "left": null,
+                          "right": null
+                        },
+                        "backgroundColor": null
+                      },
+                      "align": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "position": "top-left"
+                      }
+                    },
+                    "cells": [
+                      {
+                        "type": "TableCellLayer",
+                        "priority": 0,
+                        "spec": {
+                          "shape": {
+                            "width": 320,
+                            "height": 200,
+                            "autoWidth": false,
+                            "autoHeight": false,
+                            "lineHeight": 1,
+                            "padding": {
+                              "top": 0,
+                              "bottom": 0,
+                              "left": 0,
+                              "right": 0
+                            },
+                            "border": {
+                              "top": null,
+                              "bottom": null,
+                              "left": null,
+                              "right": null
+                            },
+                            "backgroundColor": null
+                          },
+                          "align": {
+                            "horizontal": "left",
+                            "vertical": "top"
+                          },
+                          "position": {
+                            "x": 0,
+                            "y": 0,
+                            "position": "top-left"
+                          }
+                        },
+                        "content": {
+                          "type": "TextLayer",
+                          "priority": 0,
+                          "spec": {
+                            "shape": {
+                              "width": 320,
+                              "height": 200,
+                              "autoWidth": false,
+                              "autoHeight": false,
+                              "lineHeight": 1,
+                              "padding": {
+                                "top": 0,
+                                "bottom": 0,
+                                "left": 0,
+                                "right": 0
+                              },
+                              "border": {
+                                "top": null,
+                                "bottom": null,
+                                "left": null,
+                                "right": null
+                              },
+                              "backgroundColor": null
+                            },
+                            "align": {
+                              "horizontal": "left",
+                              "vertical": "top"
+                            },
+                            "position": {
+                              "x": 0,
+                              "y": 0,
+                              "position": "top-left"
+                            },
+                            "fontFamily": {
+                              "font": "",
+                              "fontSize": 20,
+                              "fontColor": "#000000",
+                              "angle": 0,
+                              "autowrap": true
+                            }
+                          },
+                          "data": {
+                            "valueType": "StaticValue",
+                            "expression": "",
+                            "value": "第十一行内容\n第十二行内容\n第十三行内容\n第十四行内容\n第十五行内容\n第十六行内容\n第十七行内容\n第十八行内容\n第十九行内容\n第二十行内容"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "canvas": {
+              "width": 320,
+              "height": 250
+            },
+            "layers": [
+              {
+                "type": "TableLayer",
+                "priority": 0,
+                "spec": {
+                  "shape": {
+                    "width": 320,
+                    "height": 400,
+                    "autoWidth": false,
+                    "autoHeight": false,
+                    "lineHeight": 1,
+                    "padding": {
+                      "top": 0,
+                      "bottom": 0,
+                      "left": 0,
+                      "right": 0
+                    },
+                    "border": {
+                      "top": null,
+                      "bottom": null,
+                      "left": null,
+                      "right": null
+                    },
+                    "backgroundColor": "#fff"
+                  },
+                  "align": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  },
+                  "position": {
+                    "x": 0,
+                    "y": 50,
+                    "position": "top-left"
+                  }
+                },
+                "rows": [
+                  {
+                    "type": "TableRowLayer",
+                    "priority": 0,
+                    "spec": {
+                      "shape": {
+                        "width": 320,
+                        "height": 80,
+                        "autoWidth": false,
+                        "autoHeight": false,
+                        "lineHeight": 1,
+                        "padding": {
+                          "top": 0,
+                          "bottom": 0,
+                          "left": 0,
+                          "right": 0
+                        },
+                        "border": {
+                          "top": null,
+                          "bottom": null,
+                          "left": null,
+                          "right": null
+                        },
+                        "backgroundColor": null
+                      },
+                      "align": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "position": "top-left"
+                      }
+                    },
+                    "cells": [
+                      {
+                        "type": "TableCellLayer",
+                        "priority": 0,
+                        "spec": {
+                          "shape": {
+                            "width": 320,
+                            "height": 80,
+                            "autoWidth": false,
+                            "autoHeight": false,
+                            "lineHeight": 1,
+                            "padding": {
+                              "top": 0,
+                              "bottom": 0,
+                              "left": 0,
+                              "right": 0
+                            },
+                            "border": {
+                              "top": null,
+                              "bottom": null,
+                              "left": null,
+                              "right": null
+                            },
+                            "backgroundColor": null
+                          },
+                          "align": {
+                            "horizontal": "left",
+                            "vertical": "top"
+                          },
+                          "position": {
+                            "x": 0,
+                            "y": 0,
+                            "position": "top-left"
+                          }
+                        },
+                        "content": {
+                          "type": "TextLayer",
+                          "priority": 0,
+                          "spec": {
+                            "shape": {
+                              "width": 320,
+                              "height": 80,
+                              "autoWidth": false,
+                              "autoHeight": false,
+                              "lineHeight": 1,
+                              "padding": {
+                                "top": 0,
+                                "bottom": 0,
+                                "left": 0,
+                                "right": 0
+                              },
+                              "border": {
+                                "top": null,
+                                "bottom": null,
+                                "left": null,
+                                "right": null
+                              },
+                              "backgroundColor": null
+                            },
+                            "align": {
+                              "horizontal": "left",
+                              "vertical": "top"
+                            },
+                            "position": {
+                              "x": 0,
+                              "y": 0,
+                              "position": "top-left"
+                            },
+                            "fontFamily": {
+                              "font": "",
+                              "fontSize": 20,
+                              "fontColor": "#000000",
+                              "angle": 0,
+                              "autowrap": true
+                            }
+                          },
+                          "data": {
+                            "valueType": "StaticValue",
+                            "expression": "",
+                            "value": "第二十一行内容\n第二十二行内容\n第二十三行内容\n第二十四行内容"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "split-lines-truncate-narrows-to-unsplittable",
+      "description": "truncate 收窄(工票 04 决策 5):截断开时,可拆文本行(80,4 内容行 > 剩余 40)仍页界即拆、不被截断;不可拆单体行(图片 250 > 可用区 200)沿用现役 truncate= 独占一页不报错;原子模式下行 2 会被截断隔离,两模式产物不同",
+      "graph": {
+        "canvas": {
+          "width": 320,
+          "height": 450
+        },
+        "layers": [
+          {
+            "type": "TableLayer",
+            "priority": 0,
+            "spec": {
+              "shape": {
+                "width": 320,
+                "height": 400,
+                "autoWidth": false,
+                "autoHeight": false,
+                "lineHeight": 1,
+                "padding": {
+                  "top": 0,
+                  "bottom": 0,
+                  "left": 0,
+                  "right": 0
+                },
+                "border": {
+                  "top": null,
+                  "bottom": null,
+                  "left": null,
+                  "right": null
+                },
+                "backgroundColor": "#fff"
+              },
+              "align": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "position": {
+                "x": 0,
+                "y": 50,
+                "position": "top-left"
+              }
+            },
+            "rows": [
+              {
+                "type": "TableRowLayer",
+                "priority": 0,
+                "spec": {
+                  "shape": {
+                    "width": 320,
+                    "height": 160,
+                    "autoWidth": false,
+                    "autoHeight": false,
+                    "lineHeight": 1,
+                    "padding": {
+                      "top": 0,
+                      "bottom": 0,
+                      "left": 0,
+                      "right": 0
+                    },
+                    "border": {
+                      "top": null,
+                      "bottom": null,
+                      "left": null,
+                      "right": null
+                    },
+                    "backgroundColor": null
+                  },
+                  "align": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  },
+                  "position": {
+                    "x": 0,
+                    "y": 0,
+                    "position": "top-left"
+                  }
+                },
+                "cells": [
+                  {
+                    "type": "TableCellLayer",
+                    "priority": 0,
+                    "spec": {
+                      "shape": {
+                        "width": 320,
+                        "height": 160,
+                        "autoWidth": false,
+                        "autoHeight": false,
+                        "lineHeight": 1,
+                        "padding": {
+                          "top": 0,
+                          "bottom": 0,
+                          "left": 0,
+                          "right": 0
+                        },
+                        "border": {
+                          "top": null,
+                          "bottom": null,
+                          "left": null,
+                          "right": null
+                        },
+                        "backgroundColor": null
+                      },
+                      "align": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "position": "top-left"
+                      }
+                    },
+                    "content": {
+                      "type": "TextLayer",
+                      "priority": 0,
+                      "spec": {
+                        "shape": {
+                          "width": 320,
+                          "height": 160,
+                          "autoWidth": false,
+                          "autoHeight": false,
+                          "lineHeight": 1,
+                          "padding": {
+                            "top": 0,
+                            "bottom": 0,
+                            "left": 0,
+                            "right": 0
+                          },
+                          "border": {
+                            "top": null,
+                            "bottom": null,
+                            "left": null,
+                            "right": null
+                          },
+                          "backgroundColor": null
+                        },
+                        "align": {
+                          "horizontal": "left",
+                          "vertical": "top"
+                        },
+                        "position": {
+                          "x": 0,
+                          "y": 0,
+                          "position": "top-left"
+                        },
+                        "fontFamily": {
+                          "font": "",
+                          "fontSize": 20,
+                          "fontColor": "#000000",
+                          "angle": 0,
+                          "autowrap": false
+                        }
+                      },
+                      "data": {
+                        "valueType": "StaticValue",
+                        "expression": "",
+                        "value": "前置行"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "TableRowLayer",
+                "priority": 0,
+                "spec": {
+                  "shape": {
+                    "width": 320,
+                    "height": 80,
+                    "autoWidth": false,
+                    "autoHeight": false,
+                    "lineHeight": 1,
+                    "padding": {
+                      "top": 0,
+                      "bottom": 0,
+                      "left": 0,
+                      "right": 0
+                    },
+                    "border": {
+                      "top": null,
+                      "bottom": null,
+                      "left": null,
+                      "right": null
+                    },
+                    "backgroundColor": null
+                  },
+                  "align": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  },
+                  "position": {
+                    "x": 0,
+                    "y": 0,
+                    "position": "top-left"
+                  }
+                },
+                "cells": [
+                  {
+                    "type": "TableCellLayer",
+                    "priority": 0,
+                    "spec": {
+                      "shape": {
+                        "width": 320,
+                        "height": 80,
+                        "autoWidth": false,
+                        "autoHeight": false,
+                        "lineHeight": 1,
+                        "padding": {
+                          "top": 0,
+                          "bottom": 0,
+                          "left": 0,
+                          "right": 0
+                        },
+                        "border": {
+                          "top": null,
+                          "bottom": null,
+                          "left": null,
+                          "right": null
+                        },
+                        "backgroundColor": null
+                      },
+                      "align": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "position": "top-left"
+                      }
+                    },
+                    "content": {
+                      "type": "TextLayer",
+                      "priority": 0,
+                      "spec": {
+                        "shape": {
+                          "width": 320,
+                          "height": 80,
+                          "autoWidth": false,
+                          "autoHeight": false,
+                          "lineHeight": 1,
+                          "padding": {
+                            "top": 0,
+                            "bottom": 0,
+                            "left": 0,
+                            "right": 0
+                          },
+                          "border": {
+                            "top": null,
+                            "bottom": null,
+                            "left": null,
+                            "right": null
+                          },
+                          "backgroundColor": null
+                        },
+                        "align": {
+                          "horizontal": "left",
+                          "vertical": "top"
+                        },
+                        "position": {
+                          "x": 0,
+                          "y": 0,
+                          "position": "top-left"
+                        },
+                        "fontFamily": {
+                          "font": "",
+                          "fontSize": 20,
+                          "fontColor": "#000000",
+                          "angle": 0,
+                          "autowrap": true
+                        }
+                      },
+                      "data": {
+                        "valueType": "StaticValue",
+                        "expression": "",
+                        "value": "第一行内容\n第二行内容\n第三行内容\n第四行内容"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "TableRowLayer",
+                "priority": 0,
+                "spec": {
+                  "shape": {
+                    "width": 320,
+                    "height": 250,
+                    "autoWidth": false,
+                    "autoHeight": false,
+                    "lineHeight": 1,
+                    "padding": {
+                      "top": 0,
+                      "bottom": 0,
+                      "left": 0,
+                      "right": 0
+                    },
+                    "border": {
+                      "top": null,
+                      "bottom": null,
+                      "left": null,
+                      "right": null
+                    },
+                    "backgroundColor": null
+                  },
+                  "align": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  },
+                  "position": {
+                    "x": 0,
+                    "y": 0,
+                    "position": "top-left"
+                  }
+                },
+                "cells": [
+                  {
+                    "type": "TableCellLayer",
+                    "priority": 0,
+                    "spec": {
+                      "shape": {
+                        "width": 320,
+                        "height": 250,
+                        "autoWidth": false,
+                        "autoHeight": false,
+                        "lineHeight": 1,
+                        "padding": {
+                          "top": 0,
+                          "bottom": 0,
+                          "left": 0,
+                          "right": 0
+                        },
+                        "border": {
+                          "top": null,
+                          "bottom": null,
+                          "left": null,
+                          "right": null
+                        },
+                        "backgroundColor": null
+                      },
+                      "align": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "position": "top-left"
+                      }
+                    },
+                    "content": {
+                      "type": "ImageLayer",
+                      "priority": 0,
+                      "spec": {
+                        "shape": {
+                          "width": 320,
+                          "height": 250,
+                          "autoWidth": false,
+                          "autoHeight": false,
+                          "lineHeight": 1,
+                          "padding": {
+                            "top": 0,
+                            "bottom": 0,
+                            "left": 0,
+                            "right": 0
+                          },
+                          "border": {
+                            "top": null,
+                            "bottom": null,
+                            "left": null,
+                            "right": null
+                          },
+                          "backgroundColor": null
+                        },
+                        "align": {
+                          "horizontal": "left",
+                          "vertical": "top"
+                        },
+                        "position": {
+                          "x": 0,
+                          "y": 0,
+                          "position": "top-left"
+                        }
+                      },
+                      "data": {
+                        "valueType": "StaticValue",
+                        "value": "/img/oversize.png"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "pageHeight": 250,
+        "truncate": true,
+        "split": "lines"
+      },
+      "expect": {
+        "pages": [
+          {
+            "canvas": {
+              "width": 320,
+              "height": 250
+            },
+            "layers": [
+              {
+                "type": "TableLayer",
+                "priority": 0,
+                "spec": {
+                  "shape": {
+                    "width": 320,
+                    "height": 400,
+                    "autoWidth": false,
+                    "autoHeight": false,
+                    "lineHeight": 1,
+                    "padding": {
+                      "top": 0,
+                      "bottom": 0,
+                      "left": 0,
+                      "right": 0
+                    },
+                    "border": {
+                      "top": null,
+                      "bottom": null,
+                      "left": null,
+                      "right": null
+                    },
+                    "backgroundColor": "#fff"
+                  },
+                  "align": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  },
+                  "position": {
+                    "x": 0,
+                    "y": 50,
+                    "position": "top-left"
+                  }
+                },
+                "rows": [
+                  {
+                    "type": "TableRowLayer",
+                    "priority": 0,
+                    "spec": {
+                      "shape": {
+                        "width": 320,
+                        "height": 160,
+                        "autoWidth": false,
+                        "autoHeight": false,
+                        "lineHeight": 1,
+                        "padding": {
+                          "top": 0,
+                          "bottom": 0,
+                          "left": 0,
+                          "right": 0
+                        },
+                        "border": {
+                          "top": null,
+                          "bottom": null,
+                          "left": null,
+                          "right": null
+                        },
+                        "backgroundColor": null
+                      },
+                      "align": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "position": "top-left"
+                      }
+                    },
+                    "cells": [
+                      {
+                        "type": "TableCellLayer",
+                        "priority": 0,
+                        "spec": {
+                          "shape": {
+                            "width": 320,
+                            "height": 160,
+                            "autoWidth": false,
+                            "autoHeight": false,
+                            "lineHeight": 1,
+                            "padding": {
+                              "top": 0,
+                              "bottom": 0,
+                              "left": 0,
+                              "right": 0
+                            },
+                            "border": {
+                              "top": null,
+                              "bottom": null,
+                              "left": null,
+                              "right": null
+                            },
+                            "backgroundColor": null
+                          },
+                          "align": {
+                            "horizontal": "left",
+                            "vertical": "top"
+                          },
+                          "position": {
+                            "x": 0,
+                            "y": 0,
+                            "position": "top-left"
+                          }
+                        },
+                        "content": {
+                          "type": "TextLayer",
+                          "priority": 0,
+                          "spec": {
+                            "shape": {
+                              "width": 320,
+                              "height": 160,
+                              "autoWidth": false,
+                              "autoHeight": false,
+                              "lineHeight": 1,
+                              "padding": {
+                                "top": 0,
+                                "bottom": 0,
+                                "left": 0,
+                                "right": 0
+                              },
+                              "border": {
+                                "top": null,
+                                "bottom": null,
+                                "left": null,
+                                "right": null
+                              },
+                              "backgroundColor": null
+                            },
+                            "align": {
+                              "horizontal": "left",
+                              "vertical": "top"
+                            },
+                            "position": {
+                              "x": 0,
+                              "y": 0,
+                              "position": "top-left"
+                            },
+                            "fontFamily": {
+                              "font": "",
+                              "fontSize": 20,
+                              "fontColor": "#000000",
+                              "angle": 0,
+                              "autowrap": false
+                            }
+                          },
+                          "data": {
+                            "valueType": "StaticValue",
+                            "expression": "",
+                            "value": "前置行"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "TableRowLayer",
+                    "priority": 0,
+                    "spec": {
+                      "shape": {
+                        "width": 320,
+                        "height": 40,
+                        "autoWidth": false,
+                        "autoHeight": false,
+                        "lineHeight": 1,
+                        "padding": {
+                          "top": 0,
+                          "bottom": 0,
+                          "left": 0,
+                          "right": 0
+                        },
+                        "border": {
+                          "top": null,
+                          "bottom": null,
+                          "left": null,
+                          "right": null
+                        },
+                        "backgroundColor": null
+                      },
+                      "align": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "position": "top-left"
+                      }
+                    },
+                    "cells": [
+                      {
+                        "type": "TableCellLayer",
+                        "priority": 0,
+                        "spec": {
+                          "shape": {
+                            "width": 320,
+                            "height": 40,
+                            "autoWidth": false,
+                            "autoHeight": false,
+                            "lineHeight": 1,
+                            "padding": {
+                              "top": 0,
+                              "bottom": 0,
+                              "left": 0,
+                              "right": 0
+                            },
+                            "border": {
+                              "top": null,
+                              "bottom": null,
+                              "left": null,
+                              "right": null
+                            },
+                            "backgroundColor": null
+                          },
+                          "align": {
+                            "horizontal": "left",
+                            "vertical": "top"
+                          },
+                          "position": {
+                            "x": 0,
+                            "y": 0,
+                            "position": "top-left"
+                          }
+                        },
+                        "content": {
+                          "type": "TextLayer",
+                          "priority": 0,
+                          "spec": {
+                            "shape": {
+                              "width": 320,
+                              "height": 40,
+                              "autoWidth": false,
+                              "autoHeight": false,
+                              "lineHeight": 1,
+                              "padding": {
+                                "top": 0,
+                                "bottom": 0,
+                                "left": 0,
+                                "right": 0
+                              },
+                              "border": {
+                                "top": null,
+                                "bottom": null,
+                                "left": null,
+                                "right": null
+                              },
+                              "backgroundColor": null
+                            },
+                            "align": {
+                              "horizontal": "left",
+                              "vertical": "top"
+                            },
+                            "position": {
+                              "x": 0,
+                              "y": 0,
+                              "position": "top-left"
+                            },
+                            "fontFamily": {
+                              "font": "",
+                              "fontSize": 20,
+                              "fontColor": "#000000",
+                              "angle": 0,
+                              "autowrap": true
+                            }
+                          },
+                          "data": {
+                            "valueType": "StaticValue",
+                            "expression": "",
+                            "value": "第一行内容\n第二行内容"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "canvas": {
+              "width": 320,
+              "height": 250
+            },
+            "layers": [
+              {
+                "type": "TableLayer",
+                "priority": 0,
+                "spec": {
+                  "shape": {
+                    "width": 320,
+                    "height": 400,
+                    "autoWidth": false,
+                    "autoHeight": false,
+                    "lineHeight": 1,
+                    "padding": {
+                      "top": 0,
+                      "bottom": 0,
+                      "left": 0,
+                      "right": 0
+                    },
+                    "border": {
+                      "top": null,
+                      "bottom": null,
+                      "left": null,
+                      "right": null
+                    },
+                    "backgroundColor": "#fff"
+                  },
+                  "align": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  },
+                  "position": {
+                    "x": 0,
+                    "y": 50,
+                    "position": "top-left"
+                  }
+                },
+                "rows": [
+                  {
+                    "type": "TableRowLayer",
+                    "priority": 0,
+                    "spec": {
+                      "shape": {
+                        "width": 320,
+                        "height": 40,
+                        "autoWidth": false,
+                        "autoHeight": false,
+                        "lineHeight": 1,
+                        "padding": {
+                          "top": 0,
+                          "bottom": 0,
+                          "left": 0,
+                          "right": 0
+                        },
+                        "border": {
+                          "top": null,
+                          "bottom": null,
+                          "left": null,
+                          "right": null
+                        },
+                        "backgroundColor": null
+                      },
+                      "align": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "position": "top-left"
+                      }
+                    },
+                    "cells": [
+                      {
+                        "type": "TableCellLayer",
+                        "priority": 0,
+                        "spec": {
+                          "shape": {
+                            "width": 320,
+                            "height": 40,
+                            "autoWidth": false,
+                            "autoHeight": false,
+                            "lineHeight": 1,
+                            "padding": {
+                              "top": 0,
+                              "bottom": 0,
+                              "left": 0,
+                              "right": 0
+                            },
+                            "border": {
+                              "top": null,
+                              "bottom": null,
+                              "left": null,
+                              "right": null
+                            },
+                            "backgroundColor": null
+                          },
+                          "align": {
+                            "horizontal": "left",
+                            "vertical": "top"
+                          },
+                          "position": {
+                            "x": 0,
+                            "y": 0,
+                            "position": "top-left"
+                          }
+                        },
+                        "content": {
+                          "type": "TextLayer",
+                          "priority": 0,
+                          "spec": {
+                            "shape": {
+                              "width": 320,
+                              "height": 40,
+                              "autoWidth": false,
+                              "autoHeight": false,
+                              "lineHeight": 1,
+                              "padding": {
+                                "top": 0,
+                                "bottom": 0,
+                                "left": 0,
+                                "right": 0
+                              },
+                              "border": {
+                                "top": null,
+                                "bottom": null,
+                                "left": null,
+                                "right": null
+                              },
+                              "backgroundColor": null
+                            },
+                            "align": {
+                              "horizontal": "left",
+                              "vertical": "top"
+                            },
+                            "position": {
+                              "x": 0,
+                              "y": 0,
+                              "position": "top-left"
+                            },
+                            "fontFamily": {
+                              "font": "",
+                              "fontSize": 20,
+                              "fontColor": "#000000",
+                              "angle": 0,
+                              "autowrap": true
+                            }
+                          },
+                          "data": {
+                            "valueType": "StaticValue",
+                            "expression": "",
+                            "value": "第三行内容\n第四行内容"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "canvas": {
+              "width": 320,
+              "height": 250
+            },
+            "layers": [
+              {
+                "type": "TableLayer",
+                "priority": 0,
+                "spec": {
+                  "shape": {
+                    "width": 320,
+                    "height": 400,
+                    "autoWidth": false,
+                    "autoHeight": false,
+                    "lineHeight": 1,
+                    "padding": {
+                      "top": 0,
+                      "bottom": 0,
+                      "left": 0,
+                      "right": 0
+                    },
+                    "border": {
+                      "top": null,
+                      "bottom": null,
+                      "left": null,
+                      "right": null
+                    },
+                    "backgroundColor": "#fff"
+                  },
+                  "align": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  },
+                  "position": {
+                    "x": 0,
+                    "y": 50,
+                    "position": "top-left"
+                  }
+                },
+                "rows": [
+                  {
+                    "type": "TableRowLayer",
+                    "priority": 0,
+                    "spec": {
+                      "shape": {
+                        "width": 320,
+                        "height": 250,
+                        "autoWidth": false,
+                        "autoHeight": false,
+                        "lineHeight": 1,
+                        "padding": {
+                          "top": 0,
+                          "bottom": 0,
+                          "left": 0,
+                          "right": 0
+                        },
+                        "border": {
+                          "top": null,
+                          "bottom": null,
+                          "left": null,
+                          "right": null
+                        },
+                        "backgroundColor": null
+                      },
+                      "align": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "position": "top-left"
+                      }
+                    },
+                    "cells": [
+                      {
+                        "type": "TableCellLayer",
+                        "priority": 0,
+                        "spec": {
+                          "shape": {
+                            "width": 320,
+                            "height": 250,
+                            "autoWidth": false,
+                            "autoHeight": false,
+                            "lineHeight": 1,
+                            "padding": {
+                              "top": 0,
+                              "bottom": 0,
+                              "left": 0,
+                              "right": 0
+                            },
+                            "border": {
+                              "top": null,
+                              "bottom": null,
+                              "left": null,
+                              "right": null
+                            },
+                            "backgroundColor": null
+                          },
+                          "align": {
+                            "horizontal": "left",
+                            "vertical": "top"
+                          },
+                          "position": {
+                            "x": 0,
+                            "y": 0,
+                            "position": "top-left"
+                          }
+                        },
+                        "content": {
+                          "type": "ImageLayer",
+                          "priority": 0,
+                          "spec": {
+                            "shape": {
+                              "width": 320,
+                              "height": 250,
+                              "autoWidth": false,
+                              "autoHeight": false,
+                              "lineHeight": 1,
+                              "padding": {
+                                "top": 0,
+                                "bottom": 0,
+                                "left": 0,
+                                "right": 0
+                              },
+                              "border": {
+                                "top": null,
+                                "bottom": null,
+                                "left": null,
+                                "right": null
+                              },
+                              "backgroundColor": null
+                            },
+                            "align": {
+                              "horizontal": "left",
+                              "vertical": "top"
+                            },
+                            "position": {
+                              "x": 0,
+                              "y": 0,
+                              "position": "top-left"
+                            }
+                          },
+                          "data": {
+                            "valueType": "StaticValue",
+                            "value": "/img/oversize.png"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "split-lines-degenerate-line-overflow",
+      "description": "退化线(工票 04 决策 9):不可拆行(autowrap 关、行数 1)高 300 > 可用区 200 → content_overflow,行是最终原子;content_overflow 在拆分模式收窄为「不可拆残余」,与原子模式同果(对照用例)",
+      "graph": {
+        "canvas": {
+          "width": 320,
+          "height": 450
+        },
+        "layers": [
+          {
+            "type": "TableLayer",
+            "priority": 0,
+            "spec": {
+              "shape": {
+                "width": 320,
+                "height": 400,
+                "autoWidth": false,
+                "autoHeight": false,
+                "lineHeight": 1,
+                "padding": {
+                  "top": 0,
+                  "bottom": 0,
+                  "left": 0,
+                  "right": 0
+                },
+                "border": {
+                  "top": null,
+                  "bottom": null,
+                  "left": null,
+                  "right": null
+                },
+                "backgroundColor": "#fff"
+              },
+              "align": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "position": {
+                "x": 0,
+                "y": 50,
+                "position": "top-left"
+              }
+            },
+            "rows": [
+              {
+                "type": "TableRowLayer",
+                "priority": 0,
+                "spec": {
+                  "shape": {
+                    "width": 320,
+                    "height": 300,
+                    "autoWidth": false,
+                    "autoHeight": false,
+                    "lineHeight": 1,
+                    "padding": {
+                      "top": 0,
+                      "bottom": 0,
+                      "left": 0,
+                      "right": 0
+                    },
+                    "border": {
+                      "top": null,
+                      "bottom": null,
+                      "left": null,
+                      "right": null
+                    },
+                    "backgroundColor": null
+                  },
+                  "align": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  },
+                  "position": {
+                    "x": 0,
+                    "y": 0,
+                    "position": "top-left"
+                  }
+                },
+                "cells": [
+                  {
+                    "type": "TableCellLayer",
+                    "priority": 0,
+                    "spec": {
+                      "shape": {
+                        "width": 320,
+                        "height": 300,
+                        "autoWidth": false,
+                        "autoHeight": false,
+                        "lineHeight": 1,
+                        "padding": {
+                          "top": 0,
+                          "bottom": 0,
+                          "left": 0,
+                          "right": 0
+                        },
+                        "border": {
+                          "top": null,
+                          "bottom": null,
+                          "left": null,
+                          "right": null
+                        },
+                        "backgroundColor": null
+                      },
+                      "align": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "position": "top-left"
+                      }
+                    },
+                    "content": {
+                      "type": "TextLayer",
+                      "priority": 0,
+                      "spec": {
+                        "shape": {
+                          "width": 320,
+                          "height": 300,
+                          "autoWidth": false,
+                          "autoHeight": false,
+                          "lineHeight": 1,
+                          "padding": {
+                            "top": 0,
+                            "bottom": 0,
+                            "left": 0,
+                            "right": 0
+                          },
+                          "border": {
+                            "top": null,
+                            "bottom": null,
+                            "left": null,
+                            "right": null
+                          },
+                          "backgroundColor": null
+                        },
+                        "align": {
+                          "horizontal": "left",
+                          "vertical": "top"
+                        },
+                        "position": {
+                          "x": 0,
+                          "y": 0,
+                          "position": "top-left"
+                        },
+                        "fontFamily": {
+                          "font": "",
+                          "fontSize": 20,
+                          "fontColor": "#000000",
+                          "angle": 0,
+                          "autowrap": false
+                        }
+                      },
+                      "data": {
+                        "valueType": "StaticValue",
+                        "expression": "",
+                        "value": "单行超页内容"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "pageHeight": 250,
+        "split": "lines"
+      },
+      "expect": {
+        "errorCode": "content_overflow"
+      }
+    },
+    {
+      "name": "split-lines-key-ineffective-when-pagination-off",
+      "description": "分页关(缺 pageHeight)时 split 键无效:单页直通 + 溢出判定不变(底边 50+160+80=290 ≤ 画布 450 不越界),与 passthrough-no-page-height 同语义",
+      "graph": {
+        "canvas": {
+          "width": 320,
+          "height": 450
+        },
+        "layers": [
+          {
+            "type": "TableLayer",
+            "priority": 0,
+            "spec": {
+              "shape": {
+                "width": 320,
+                "height": 400,
+                "autoWidth": false,
+                "autoHeight": false,
+                "lineHeight": 1,
+                "padding": {
+                  "top": 0,
+                  "bottom": 0,
+                  "left": 0,
+                  "right": 0
+                },
+                "border": {
+                  "top": null,
+                  "bottom": null,
+                  "left": null,
+                  "right": null
+                },
+                "backgroundColor": "#fff"
+              },
+              "align": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "position": {
+                "x": 0,
+                "y": 50,
+                "position": "top-left"
+              }
+            },
+            "rows": [
+              {
+                "type": "TableRowLayer",
+                "priority": 0,
+                "spec": {
+                  "shape": {
+                    "width": 320,
+                    "height": 160,
+                    "autoWidth": false,
+                    "autoHeight": false,
+                    "lineHeight": 1,
+                    "padding": {
+                      "top": 0,
+                      "bottom": 0,
+                      "left": 0,
+                      "right": 0
+                    },
+                    "border": {
+                      "top": null,
+                      "bottom": null,
+                      "left": null,
+                      "right": null
+                    },
+                    "backgroundColor": null
+                  },
+                  "align": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  },
+                  "position": {
+                    "x": 0,
+                    "y": 0,
+                    "position": "top-left"
+                  }
+                },
+                "cells": [
+                  {
+                    "type": "TableCellLayer",
+                    "priority": 0,
+                    "spec": {
+                      "shape": {
+                        "width": 320,
+                        "height": 160,
+                        "autoWidth": false,
+                        "autoHeight": false,
+                        "lineHeight": 1,
+                        "padding": {
+                          "top": 0,
+                          "bottom": 0,
+                          "left": 0,
+                          "right": 0
+                        },
+                        "border": {
+                          "top": null,
+                          "bottom": null,
+                          "left": null,
+                          "right": null
+                        },
+                        "backgroundColor": null
+                      },
+                      "align": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "position": "top-left"
+                      }
+                    },
+                    "content": {
+                      "type": "TextLayer",
+                      "priority": 0,
+                      "spec": {
+                        "shape": {
+                          "width": 320,
+                          "height": 160,
+                          "autoWidth": false,
+                          "autoHeight": false,
+                          "lineHeight": 1,
+                          "padding": {
+                            "top": 0,
+                            "bottom": 0,
+                            "left": 0,
+                            "right": 0
+                          },
+                          "border": {
+                            "top": null,
+                            "bottom": null,
+                            "left": null,
+                            "right": null
+                          },
+                          "backgroundColor": null
+                        },
+                        "align": {
+                          "horizontal": "left",
+                          "vertical": "top"
+                        },
+                        "position": {
+                          "x": 0,
+                          "y": 0,
+                          "position": "top-left"
+                        },
+                        "fontFamily": {
+                          "font": "",
+                          "fontSize": 20,
+                          "fontColor": "#000000",
+                          "angle": 0,
+                          "autowrap": false
+                        }
+                      },
+                      "data": {
+                        "valueType": "StaticValue",
+                        "expression": "",
+                        "value": "前置行"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "TableRowLayer",
+                "priority": 0,
+                "spec": {
+                  "shape": {
+                    "width": 320,
+                    "height": 80,
+                    "autoWidth": false,
+                    "autoHeight": false,
+                    "lineHeight": 1,
+                    "padding": {
+                      "top": 0,
+                      "bottom": 0,
+                      "left": 0,
+                      "right": 0
+                    },
+                    "border": {
+                      "top": null,
+                      "bottom": null,
+                      "left": null,
+                      "right": null
+                    },
+                    "backgroundColor": null
+                  },
+                  "align": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  },
+                  "position": {
+                    "x": 0,
+                    "y": 0,
+                    "position": "top-left"
+                  }
+                },
+                "cells": [
+                  {
+                    "type": "TableCellLayer",
+                    "priority": 0,
+                    "spec": {
+                      "shape": {
+                        "width": 320,
+                        "height": 80,
+                        "autoWidth": false,
+                        "autoHeight": false,
+                        "lineHeight": 1,
+                        "padding": {
+                          "top": 0,
+                          "bottom": 0,
+                          "left": 0,
+                          "right": 0
+                        },
+                        "border": {
+                          "top": null,
+                          "bottom": null,
+                          "left": null,
+                          "right": null
+                        },
+                        "backgroundColor": null
+                      },
+                      "align": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "position": "top-left"
+                      }
+                    },
+                    "content": {
+                      "type": "TextLayer",
+                      "priority": 0,
+                      "spec": {
+                        "shape": {
+                          "width": 320,
+                          "height": 80,
+                          "autoWidth": false,
+                          "autoHeight": false,
+                          "lineHeight": 1,
+                          "padding": {
+                            "top": 0,
+                            "bottom": 0,
+                            "left": 0,
+                            "right": 0
+                          },
+                          "border": {
+                            "top": null,
+                            "bottom": null,
+                            "left": null,
+                            "right": null
+                          },
+                          "backgroundColor": null
+                        },
+                        "align": {
+                          "horizontal": "left",
+                          "vertical": "top"
+                        },
+                        "position": {
+                          "x": 0,
+                          "y": 0,
+                          "position": "top-left"
+                        },
+                        "fontFamily": {
+                          "font": "",
+                          "fontSize": 20,
+                          "fontColor": "#000000",
+                          "angle": 0,
+                          "autowrap": true
+                        }
+                      },
+                      "data": {
+                        "valueType": "StaticValue",
+                        "expression": "",
+                        "value": "第一行内容\n第二行内容\n第三行内容\n第四行内容"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "split": "lines"
+      },
+      "expect": {
+        "pages": [
+          {
+            "canvas": {
+              "width": 320,
+              "height": 450
+            },
+            "layers": [
+              {
+                "type": "TableLayer",
+                "priority": 0,
+                "spec": {
+                  "shape": {
+                    "width": 320,
+                    "height": 400,
+                    "autoWidth": false,
+                    "autoHeight": false,
+                    "lineHeight": 1,
+                    "padding": {
+                      "top": 0,
+                      "bottom": 0,
+                      "left": 0,
+                      "right": 0
+                    },
+                    "border": {
+                      "top": null,
+                      "bottom": null,
+                      "left": null,
+                      "right": null
+                    },
+                    "backgroundColor": "#fff"
+                  },
+                  "align": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  },
+                  "position": {
+                    "x": 0,
+                    "y": 50,
+                    "position": "top-left"
+                  }
+                },
+                "rows": [
+                  {
+                    "type": "TableRowLayer",
+                    "priority": 0,
+                    "spec": {
+                      "shape": {
+                        "width": 320,
+                        "height": 160,
+                        "autoWidth": false,
+                        "autoHeight": false,
+                        "lineHeight": 1,
+                        "padding": {
+                          "top": 0,
+                          "bottom": 0,
+                          "left": 0,
+                          "right": 0
+                        },
+                        "border": {
+                          "top": null,
+                          "bottom": null,
+                          "left": null,
+                          "right": null
+                        },
+                        "backgroundColor": null
+                      },
+                      "align": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "position": "top-left"
+                      }
+                    },
+                    "cells": [
+                      {
+                        "type": "TableCellLayer",
+                        "priority": 0,
+                        "spec": {
+                          "shape": {
+                            "width": 320,
+                            "height": 160,
+                            "autoWidth": false,
+                            "autoHeight": false,
+                            "lineHeight": 1,
+                            "padding": {
+                              "top": 0,
+                              "bottom": 0,
+                              "left": 0,
+                              "right": 0
+                            },
+                            "border": {
+                              "top": null,
+                              "bottom": null,
+                              "left": null,
+                              "right": null
+                            },
+                            "backgroundColor": null
+                          },
+                          "align": {
+                            "horizontal": "left",
+                            "vertical": "top"
+                          },
+                          "position": {
+                            "x": 0,
+                            "y": 0,
+                            "position": "top-left"
+                          }
+                        },
+                        "content": {
+                          "type": "TextLayer",
+                          "priority": 0,
+                          "spec": {
+                            "shape": {
+                              "width": 320,
+                              "height": 160,
+                              "autoWidth": false,
+                              "autoHeight": false,
+                              "lineHeight": 1,
+                              "padding": {
+                                "top": 0,
+                                "bottom": 0,
+                                "left": 0,
+                                "right": 0
+                              },
+                              "border": {
+                                "top": null,
+                                "bottom": null,
+                                "left": null,
+                                "right": null
+                              },
+                              "backgroundColor": null
+                            },
+                            "align": {
+                              "horizontal": "left",
+                              "vertical": "top"
+                            },
+                            "position": {
+                              "x": 0,
+                              "y": 0,
+                              "position": "top-left"
+                            },
+                            "fontFamily": {
+                              "font": "",
+                              "fontSize": 20,
+                              "fontColor": "#000000",
+                              "angle": 0,
+                              "autowrap": false
+                            }
+                          },
+                          "data": {
+                            "valueType": "StaticValue",
+                            "expression": "",
+                            "value": "前置行"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "TableRowLayer",
+                    "priority": 0,
+                    "spec": {
+                      "shape": {
+                        "width": 320,
+                        "height": 80,
+                        "autoWidth": false,
+                        "autoHeight": false,
+                        "lineHeight": 1,
+                        "padding": {
+                          "top": 0,
+                          "bottom": 0,
+                          "left": 0,
+                          "right": 0
+                        },
+                        "border": {
+                          "top": null,
+                          "bottom": null,
+                          "left": null,
+                          "right": null
+                        },
+                        "backgroundColor": null
+                      },
+                      "align": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "position": "top-left"
+                      }
+                    },
+                    "cells": [
+                      {
+                        "type": "TableCellLayer",
+                        "priority": 0,
+                        "spec": {
+                          "shape": {
+                            "width": 320,
+                            "height": 80,
+                            "autoWidth": false,
+                            "autoHeight": false,
+                            "lineHeight": 1,
+                            "padding": {
+                              "top": 0,
+                              "bottom": 0,
+                              "left": 0,
+                              "right": 0
+                            },
+                            "border": {
+                              "top": null,
+                              "bottom": null,
+                              "left": null,
+                              "right": null
+                            },
+                            "backgroundColor": null
+                          },
+                          "align": {
+                            "horizontal": "left",
+                            "vertical": "top"
+                          },
+                          "position": {
+                            "x": 0,
+                            "y": 0,
+                            "position": "top-left"
+                          }
+                        },
+                        "content": {
+                          "type": "TextLayer",
+                          "priority": 0,
+                          "spec": {
+                            "shape": {
+                              "width": 320,
+                              "height": 80,
+                              "autoWidth": false,
+                              "autoHeight": false,
+                              "lineHeight": 1,
+                              "padding": {
+                                "top": 0,
+                                "bottom": 0,
+                                "left": 0,
+                                "right": 0
+                              },
+                              "border": {
+                                "top": null,
+                                "bottom": null,
+                                "left": null,
+                                "right": null
+                              },
+                              "backgroundColor": null
+                            },
+                            "align": {
+                              "horizontal": "left",
+                              "vertical": "top"
+                            },
+                            "position": {
+                              "x": 0,
+                              "y": 0,
+                              "position": "top-left"
+                            },
+                            "fontFamily": {
+                              "font": "",
+                              "fontSize": 20,
+                              "fontColor": "#000000",
+                              "angle": 0,
+                              "autowrap": true
+                            }
+                          },
+                          "data": {
+                            "valueType": "StaticValue",
+                            "expression": "",
+                            "value": "第一行内容\n第二行内容\n第三行内容\n第四行内容"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "split-unknown-value-paginate-option-invalid",
+      "description": "options.split 键认识而值不认识(「rows」∉ 闭集 {\"lines\"})→ 构造期 fail-fast paginate_option_invalid(与 page_geometry_invalid 同族;开键面未知键仍忽略,本例钉的是已知键的枚举闭面)",
+      "graph": {
+        "canvas": {
+          "width": 320,
+          "height": 450
+        },
+        "layers": [
+          {
+            "type": "TableLayer",
+            "priority": 0,
+            "spec": {
+              "shape": {
+                "width": 320,
+                "height": 400,
+                "autoWidth": false,
+                "autoHeight": false,
+                "lineHeight": 1,
+                "padding": {
+                  "top": 0,
+                  "bottom": 0,
+                  "left": 0,
+                  "right": 0
+                },
+                "border": {
+                  "top": null,
+                  "bottom": null,
+                  "left": null,
+                  "right": null
+                },
+                "backgroundColor": "#fff"
+              },
+              "align": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "position": {
+                "x": 0,
+                "y": 50,
+                "position": "top-left"
+              }
+            },
+            "rows": [
+              {
+                "type": "TableRowLayer",
+                "priority": 0,
+                "spec": {
+                  "shape": {
+                    "width": 320,
+                    "height": 160,
+                    "autoWidth": false,
+                    "autoHeight": false,
+                    "lineHeight": 1,
+                    "padding": {
+                      "top": 0,
+                      "bottom": 0,
+                      "left": 0,
+                      "right": 0
+                    },
+                    "border": {
+                      "top": null,
+                      "bottom": null,
+                      "left": null,
+                      "right": null
+                    },
+                    "backgroundColor": null
+                  },
+                  "align": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  },
+                  "position": {
+                    "x": 0,
+                    "y": 0,
+                    "position": "top-left"
+                  }
+                },
+                "cells": [
+                  {
+                    "type": "TableCellLayer",
+                    "priority": 0,
+                    "spec": {
+                      "shape": {
+                        "width": 320,
+                        "height": 160,
+                        "autoWidth": false,
+                        "autoHeight": false,
+                        "lineHeight": 1,
+                        "padding": {
+                          "top": 0,
+                          "bottom": 0,
+                          "left": 0,
+                          "right": 0
+                        },
+                        "border": {
+                          "top": null,
+                          "bottom": null,
+                          "left": null,
+                          "right": null
+                        },
+                        "backgroundColor": null
+                      },
+                      "align": {
+                        "horizontal": "left",
+                        "vertical": "top"
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "position": "top-left"
+                      }
+                    },
+                    "content": {
+                      "type": "TextLayer",
+                      "priority": 0,
+                      "spec": {
+                        "shape": {
+                          "width": 320,
+                          "height": 160,
+                          "autoWidth": false,
+                          "autoHeight": false,
+                          "lineHeight": 1,
+                          "padding": {
+                            "top": 0,
+                            "bottom": 0,
+                            "left": 0,
+                            "right": 0
+                          },
+                          "border": {
+                            "top": null,
+                            "bottom": null,
+                            "left": null,
+                            "right": null
+                          },
+                          "backgroundColor": null
+                        },
+                        "align": {
+                          "horizontal": "left",
+                          "vertical": "top"
+                        },
+                        "position": {
+                          "x": 0,
+                          "y": 0,
+                          "position": "top-left"
+                        },
+                        "fontFamily": {
+                          "font": "",
+                          "fontSize": 20,
+                          "fontColor": "#000000",
+                          "angle": 0,
+                          "autowrap": false
+                        }
+                      },
+                      "data": {
+                        "valueType": "StaticValue",
+                        "expression": "",
+                        "value": "前置行"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "pageHeight": 250,
+        "split": "rows"
+      },
+      "expect": {
+        "errorCode": "paginate_option_invalid"
+      }
+    }
+  ]
+}
