@@ -256,16 +256,17 @@ func TestReleaseArtifactShape(t *testing.T) {
 	}
 }
 
-// 端到端：真实语料整仓发版。清点计数钉住当前语料面（5 契约 / 8 版本目录 /
-// 14 模块文件 / 350 用例 + spec/ 4 文件）；产物内语料自含 validate 全绿。
+// 端到端：真实语料整仓发版。清点计数钉住当前语料面（5 契约 / 9 版本目录 /
+// 15 模块文件 / 370 用例 + spec/ 4 文件）；产物内语料自含 validate 全绿。
+// （paginate-semantics v2.0 转正后 8→9 / 14→15 / 350→370 / 18→19）
 func TestReleaseRealCorpus(t *testing.T) {
 	out := filepath.Join(t.TempDir(), "release")
 	res := Release("..", out)
 	if len(res.Errors) != 0 {
 		t.Fatalf("真实语料应可发版：\n%s", joinErrs(res.Errors))
 	}
-	if res.ReleaseContracts != 5 || res.ReleaseVersions != 8 || res.ReleaseModuleFiles != 14 ||
-		res.ReleaseCases != 350 || res.ReleaseFiles != 18 {
+	if res.ReleaseContracts != 5 || res.ReleaseVersions != 9 || res.ReleaseModuleFiles != 15 ||
+		res.ReleaseCases != 370 || res.ReleaseFiles != 19 {
 		t.Fatalf("真实语料清点不符：%+v", res.Result)
 	}
 	if res.ReleaseBytes <= 0 {
